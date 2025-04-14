@@ -1,12 +1,12 @@
 package utils
 
 // Paginate はページネーションをサポートする関数を実行し、全結果を取得します
-func Paginate[T any](fetch func(offset int) ([]T, error)) ([]T, error) {
+func Paginate[T any](fetch func(page int) ([]T, error), limit int) ([]T, error) {
 	var allResults []T
-	offset := 0
+	page := 1
 
 	for {
-		results, err := fetch(offset)
+		results, err := fetch(page)
 		if err != nil {
 			return nil, err
 		}
@@ -17,7 +17,13 @@ func Paginate[T any](fetch func(offset int) ([]T, error)) ([]T, error) {
 		}
 
 		allResults = append(allResults, results...)
-		offset += len(results)
+
+		// 取得した結果がlimitより少ない場合は終了
+		if len(results) < limit {
+			break
+		}
+
+		page++
 	}
 
 	return allResults, nil

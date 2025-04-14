@@ -10,14 +10,14 @@ import (
 func TestPaginate(t *testing.T) {
 	tests := []struct {
 		name    string
-		fetcher func(offset int) ([]models.User, error)
+		fetcher func(page int) ([]models.User, error)
 		want    []models.User
 		wantErr bool
 	}{
 		{
 			name: "正常系: 1ページ分のデータ",
-			fetcher: func(offset int) ([]models.User, error) {
-				if offset == 0 {
+			fetcher: func(page int) ([]models.User, error) {
+				if page == 1 {
 					return []models.User{
 						{
 							ID:        1,
@@ -57,8 +57,8 @@ func TestPaginate(t *testing.T) {
 		},
 		{
 			name: "正常系: 複数ページのデータ",
-			fetcher: func(offset int) ([]models.User, error) {
-				if offset == 0 {
+			fetcher: func(page int) ([]models.User, error) {
+				if page == 1 {
 					return []models.User{
 						{
 							ID:        1,
@@ -69,7 +69,7 @@ func TestPaginate(t *testing.T) {
 						},
 					}, nil
 				}
-				if offset == 1 {
+				if page == 2 {
 					return []models.User{
 						{
 							ID:        2,
@@ -102,7 +102,7 @@ func TestPaginate(t *testing.T) {
 		},
 		{
 			name: "異常系: エラー発生",
-			fetcher: func(offset int) ([]models.User, error) {
+			fetcher: func(page int) ([]models.User, error) {
 				return nil, assert.AnError
 			},
 			want:    nil,
@@ -112,7 +112,7 @@ func TestPaginate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Paginate(tt.fetcher)
+			got, err := Paginate(tt.fetcher, 1)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
