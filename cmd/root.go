@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"log"
 
+	"github.com/pepabo/onecli/version"
 	"github.com/spf13/cobra"
 )
 
@@ -21,11 +23,21 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of onecli",
+	Long:  `Print the version number of onecli`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("v%s\n", version.Version)
+	},
+}
+
 func Execute() error {
 	return rootCmd.Execute()
 }
 
 func init() {
 	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(versionCmd)
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 }
