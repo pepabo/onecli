@@ -17,7 +17,10 @@ type UserQuery struct {
 
 // GetUsers retrieves users from Onelogin
 func (o *Onelogin) GetUsers(query UserQuery) ([]models.User, error) {
-	q := models.UserQuery{}
+	q := &models.UserQuery{
+		Limit: strconv.Itoa(DefaultPageSize),
+		Page:  "1",
+	}
 
 	if query.Email != "" {
 		q.Email = &query.Email
@@ -36,11 +39,8 @@ func (o *Onelogin) GetUsers(query UserQuery) ([]models.User, error) {
 	}
 
 	return utils.Paginate(func(page int) ([]models.User, error) {
-		if q.Limit == "" {
-			q.Limit = strconv.Itoa(DefaultPageSize)
-		}
 		q.Page = strconv.Itoa(page)
-		result, err := o.client.GetUsers(&q)
+		result, err := o.client.GetUsers(q)
 		if err != nil {
 			return nil, err
 		}
@@ -49,4 +49,9 @@ func (o *Onelogin) GetUsers(query UserQuery) ([]models.User, error) {
 		interfaceSlice := result.([]interface{})
 		return utils.ConvertToUsers(interfaceSlice)
 	}, DefaultPageSize)
+}
+
+// UpdateUser updates a user in Onelogin
+func (o *Onelogin) UpdateUser(userID int, user models.User) (interface{}, error) {
+	return o.client.UpdateUser(userID, user)
 }
