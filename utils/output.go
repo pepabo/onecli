@@ -2,9 +2,10 @@ package utils
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 // OutputFormat は出力形式を表します
@@ -16,15 +17,21 @@ const (
 )
 
 // PrintOutput は指定された形式でデータを出力します
-func PrintOutput(data interface{}, format OutputFormat) error {
+// writerがnilの場合はos.Stdoutを使用します
+func PrintOutput(data interface{}, format OutputFormat, writer io.Writer) error {
+	if writer == nil {
+		writer = os.Stdout
+	}
+
 	switch format {
 	case OutputFormatJSON:
-		encoder := json.NewEncoder(os.Stdout)
+		encoder := json.NewEncoder(writer)
 		encoder.SetIndent("", "  ")
+		encoder.SetEscapeHTML(false)
 		return encoder.Encode(data)
 	case OutputFormatYAML:
-		fallthrough
+		return yaml.NewEncoder(writer).Encode(data)
 	default:
-		return yaml.NewEncoder(os.Stdout).Encode(data)
+		return yaml.NewEncoder(writer).Encode(data)
 	}
 }

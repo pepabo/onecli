@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin"
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
@@ -30,16 +31,28 @@ var listCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// ユーザー一覧の取得
-		query := models.UserQuery{}
-		users, err := client.GetUsers(&query)
+		// ページネーションを使用して全ユーザーを取得
+		users, err := utils.Paginate(func(offset int) ([]models.User, error) {
+			query := models.UserQuery{
+				Limit: strconv.Itoa(100),
+				Page:  strconv.Itoa(offset/100 + 1),
+			}
+			result, err := client.GetUsers(&query)
+			if err != nil {
+				return nil, err
+			}
+
+			// []interface{} を []models.User に変換
+			interfaceSlice := result.([]interface{})
+			return utils.ConvertToUsers(interfaceSlice)
+		})
 		if err != nil {
 			fmt.Printf("Error fetching users: %v\n", err)
 			os.Exit(1)
 		}
 
 		// 指定された形式で出力
-		if err := utils.PrintOutput(users, utils.OutputFormat(output)); err != nil {
+		if err := utils.PrintOutput(users, utils.OutputFormat(output), os.Stdout); err != nil {
 			fmt.Printf("Error printing output: %v\n", err)
 			os.Exit(1)
 		}
