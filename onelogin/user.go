@@ -3,6 +3,7 @@ package onelogin
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/utils"
@@ -75,6 +76,12 @@ func (o *Onelogin) CreateUser(user models.User) (models.User, error) {
 		Firstname: createdUserMap["firstname"].(string),
 		Lastname:  createdUserMap["lastname"].(string),
 	}
+
+	// ユーザーのステータスをアクティブに設定
+	createdUser.Status = 1 // 1はアクティブを示す
+
+	// 最終ログイン日時を現在の日時に設定
+	createdUser.LastLogin = time.Now()
 
 	return createdUser, nil
 }
