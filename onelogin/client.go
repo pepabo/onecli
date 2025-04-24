@@ -14,6 +14,7 @@ const (
 type OneloginClient interface {
 	GetUsers(query models.Queryable) (interface{}, error)
 	UpdateUser(userID int, user models.User) (interface{}, error)
+	CreateUser(user models.User) (interface{}, error)
 }
 
 // Onelogin represents the Onelogin client

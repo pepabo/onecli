@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/onelogin"
 	"github.com/pepabo/onecli/utils"
 	"github.com/spf13/cobra"
@@ -109,10 +110,42 @@ var modifyEmailCmd = &cobra.Command{
 	},
 }
 
+var addCmd = &cobra.Command{
+	Use:   "add <first-name> <last-name> <email>",
+	Short: "Add a new user",
+	Long:  `Add a new user to your OneLogin organization`,
+	Args:  cobra.ExactArgs(3),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		firstName := args[0]
+		lastName := args[1]
+		email := args[2]
+
+		client, err := initClient()
+		if err != nil {
+			return fmt.Errorf("error initializing OneLogin client: %v", err)
+		}
+
+		newUser := models.User{
+			Firstname: firstName,
+			Lastname:  lastName,
+			Email:     email,
+		}
+
+		createdUser, err := client.CreateUser(newUser)
+		if err != nil {
+			return fmt.Errorf("error creating user: %v", err)
+		}
+
+		fmt.Printf("Successfully added user: %s %s with email: %s\n", createdUser.Firstname, createdUser.Lastname, createdUser.Email)
+		return nil
+	},
+}
+
 func init() {
 	userCmd.AddCommand(listCmd)
 	userCmd.AddCommand(modifyCmd)
 	modifyCmd.AddCommand(modifyEmailCmd)
+	userCmd.AddCommand(addCmd)
 
 	listCmd.Flags().StringVarP(&output, "output", "o", "yaml", "Output format (yaml, json)")
 	listCmd.Flags().StringVar(&queryParams.Email, "email", "", "Filter users by email")
