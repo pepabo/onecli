@@ -58,6 +58,19 @@ func (o *Onelogin) UpdateUser(userID int, user models.User) (interface{}, error)
 	return o.client.UpdateUser(userID, user)
 }
 
+// SetUserState sets the user state to active and updates the last login time
+func (o *Onelogin) SetUserState(userID int) error {
+	user := models.User{
+		Status:    1, // 1はアクティブを示す
+		LastLogin: time.Now(),
+	}
+	_, err := o.UpdateUser(userID, user)
+	if err != nil {
+		return fmt.Errorf("error setting user state: %v", err)
+	}
+	return nil
+}
+
 // CreateUser creates a new user in Onelogin
 func (o *Onelogin) CreateUser(user models.User) (models.User, error) {
 	createdUserInterface, err := o.client.CreateUser(user)
@@ -77,11 +90,10 @@ func (o *Onelogin) CreateUser(user models.User) (models.User, error) {
 		Lastname:  createdUserMap["lastname"].(string),
 	}
 
-	// ユーザーのステータスをアクティブに設定
-	createdUser.Status = 1 // 1はアクティブを示す
-
-	// 最終ログイン日時を現在の日時に設定
-	createdUser.LastLogin = time.Now()
+	// ユーザーのステータスをアクティブに設定し、最終ログイン日時を更新
+	if err := o.SetUserState(int(createdUser.ID)); err != nil {
+		return models.User{}, err
+	}
 
 	return createdUser, nil
 }
