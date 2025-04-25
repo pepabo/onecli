@@ -24,6 +24,11 @@ func (m *MockClient) UpdateUser(userID int, user models.User) (interface{}, erro
 	return args.Get(0), args.Error(1)
 }
 
+func (m *MockClient) CreateUser(user models.User) (interface{}, error) {
+	args := m.Called(user)
+	return args.Get(0), args.Error(1)
+}
+
 func TestGetUsers(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -143,6 +148,75 @@ func TestGetUsers(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedUsers, users)
+			}
+
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
+func TestCreateUser(t *testing.T) {
+	tests := []struct {
+		name          string
+		inputUser     models.User
+		mockResponse  interface{}
+		mockError     error
+		expectedUser  models.User
+		expectedError error
+	}{
+		{
+			name: "successful user creation",
+			inputUser: models.User{
+				Email:     "newuser@example.com",
+				Username:  "newuser",
+				Firstname: "New",
+				Lastname:  "User",
+			},
+			mockResponse: map[string]interface{}{
+				"id":        3,
+				"email":     "newuser@example.com",
+				"username":  "newuser",
+				"firstname": "New",
+				"lastname":  "User",
+			},
+			expectedUser: models.User{
+				ID:        3,
+				Email:     "newuser@example.com",
+				Username:  "newuser",
+				Firstname: "New",
+				Lastname:  "User",
+			},
+		},
+		{
+			name: "error creating user",
+			inputUser: models.User{
+				Email:     "erroruser@example.com",
+				Username:  "erroruser",
+				Firstname: "Error",
+				Lastname:  "User",
+			},
+			mockError:     assert.AnError,
+			expectedError: assert.AnError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(MockClient)
+			o := &Onelogin{
+				client: mockClient,
+			}
+
+			mockClient.On("CreateUser", tt.inputUser).Return(tt.mockResponse, tt.mockError)
+
+			createdUser, err := o.CreateUser(tt.inputUser)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedUser, createdUser)
 			}
 
 			mockClient.AssertExpectations(t)
