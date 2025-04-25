@@ -86,6 +86,7 @@ func (o *Onelogin) CreateUser(user models.User) (models.User, error) {
 	createdUser := models.User{
 		ID:        int32(createdUserMap["id"].(float64)),
 		Email:     createdUserMap["email"].(string),
+		Username:  createdUserMap["username"].(string),
 		Firstname: createdUserMap["firstname"].(string),
 		Lastname:  createdUserMap["lastname"].(string),
 	}
