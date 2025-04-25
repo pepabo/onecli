@@ -1,6 +1,7 @@
 package onelogin
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -173,7 +174,7 @@ func TestCreateUser(t *testing.T) {
 				Lastname:  "User",
 			},
 			mockResponse: map[string]interface{}{
-				"id":        3,
+				"id":        float64(3),
 				"email":     "newuser@example.com",
 				"username":  "newuser",
 				"firstname": "New",
@@ -196,7 +197,7 @@ func TestCreateUser(t *testing.T) {
 				Lastname:  "User",
 			},
 			mockError:     assert.AnError,
-			expectedError: assert.AnError,
+			expectedError: fmt.Errorf("error creating user: %v", assert.AnError),
 		},
 	}
 
@@ -208,6 +209,11 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			mockClient.On("CreateUser", tt.inputUser).Return(tt.mockResponse, tt.mockError)
+
+			// Add expectation for UpdateUser call in SetUserState
+			if tt.expectedError == nil {
+				mockClient.On("UpdateUser", 3, mock.AnythingOfType("models.User")).Return(nil, nil)
+			}
 
 			createdUser, err := o.CreateUser(tt.inputUser)
 
