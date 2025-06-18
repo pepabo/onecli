@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.3.2](https://github.com/pepabo/onecli/compare/v0.3.1...v0.3.2) - 2025-06-18
+- feat: Add pagination support to GetAppUsers and refactor related code by @buty4649 in https://github.com/pepabo/onecli/pull/19
+
 ## [v0.3.1](https://github.com/pepabo/onecli/compare/v0.3.0...v0.3.1) - 2025-06-18
 - fix: suppress double error output by removing redundant error print in main.go by @buty4649 in https://github.com/pepabo/onecli/pull/17
 
