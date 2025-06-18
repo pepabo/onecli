@@ -2,7 +2,6 @@ package onelogin
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
@@ -23,7 +22,7 @@ func TestGetUsers(t *testing.T) {
 		{
 			name: "successful user retrieval with email query",
 			query: UserQuery{
-				Email: "test@example.com",
+				Email: func() *string { v := "test@example.com"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -47,7 +46,7 @@ func TestGetUsers(t *testing.T) {
 		{
 			name: "successful user retrieval with multiple users",
 			query: UserQuery{
-				Firstname: "Test",
+				Firstname: func() *string { v := "Test"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -85,7 +84,7 @@ func TestGetUsers(t *testing.T) {
 		{
 			name: "error from client",
 			query: UserQuery{
-				Email: "test@example.com",
+				Email: func() *string { v := "test@example.com"; return &v }(),
 			},
 			mockError:     assert.AnError,
 			expectedError: assert.AnError,
@@ -101,23 +100,23 @@ func TestGetUsers(t *testing.T) {
 
 			// Set up mock expectations
 			expectedQuery := &models.UserQuery{
-				Limit: strconv.Itoa(DefaultPageSize),
+				Limit: "",
 				Page:  "1",
 			}
-			if tt.query.Email != "" {
-				expectedQuery.Email = &tt.query.Email
+			if tt.query.Email != nil {
+				expectedQuery.Email = tt.query.Email
 			}
-			if tt.query.Username != "" {
-				expectedQuery.Username = &tt.query.Username
+			if tt.query.Username != nil {
+				expectedQuery.Username = tt.query.Username
 			}
-			if tt.query.Firstname != "" {
-				expectedQuery.Firstname = &tt.query.Firstname
+			if tt.query.Firstname != nil {
+				expectedQuery.Firstname = tt.query.Firstname
 			}
-			if tt.query.Lastname != "" {
-				expectedQuery.Lastname = &tt.query.Lastname
+			if tt.query.Lastname != nil {
+				expectedQuery.Lastname = tt.query.Lastname
 			}
-			if tt.query.ID != "" {
-				expectedQuery.UserIDs = &tt.query.ID
+			if tt.query.UserIDs != nil {
+				expectedQuery.UserIDs = tt.query.UserIDs
 			}
 
 			mockClient.On("GetUsers", expectedQuery).Return(tt.mockResponse, tt.mockError)
@@ -154,12 +153,12 @@ func TestCreateUser(t *testing.T) {
 				Firstname: "New",
 				Lastname:  "User",
 			},
-			mockResponse: map[string]any{
-				"id":        float64(3),
-				"email":     "newuser@example.com",
-				"username":  "newuser",
-				"firstname": "New",
-				"lastname":  "User",
+			mockResponse: models.User{
+				ID:        3,
+				Email:     "newuser@example.com",
+				Username:  "newuser",
+				Firstname: "New",
+				Lastname:  "User",
 			},
 			expectedUser: models.User{
 				ID:        3,
@@ -196,14 +195,13 @@ func TestCreateUser(t *testing.T) {
 				mockClient.On("UpdateUser", 3, mock.AnythingOfType("models.User")).Return(nil, nil)
 			}
 
-			createdUser, err := o.CreateUser(tt.inputUser)
+			err := o.CreateUser(tt.inputUser)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedUser, createdUser)
 			}
 
 			mockClient.AssertExpectations(t)

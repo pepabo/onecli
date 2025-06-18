@@ -3,67 +3,52 @@ package onelogin
 import (
 	"strconv"
 
-	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/utils"
 )
 
-type AppQuery struct {
-	Name string
-}
-
 // AppDetails represents an app with its associated details
 type AppDetails struct {
-	models.App `json:",inline"`
-	Users      []models.User `json:"users,omitempty"`
+	App   `json:",inline"`
+	Users []User `json:"users,omitempty"`
 }
 
 // GetApps retrieves apps from Onelogin
-func (o *Onelogin) GetApps(query AppQuery) ([]models.App, error) {
-	q := &models.AppQuery{
-		Limit: strconv.Itoa(DefaultPageSize),
-		Page:  "1",
-	}
+func (o *Onelogin) GetApps(query AppQuery) ([]App, error) {
+	query.Limit = strconv.Itoa(DefaultPageSize)
 
-	if query.Name != "" {
-		q.Name = &query.Name
-	}
-
-	return utils.Paginate(func(page int) ([]models.App, error) {
-		q.Page = strconv.Itoa(page)
-		result, err := o.client.GetApps(q)
+	return utils.Paginate(func(page int) ([]App, error) {
+		query.Page = strconv.Itoa(page)
+		result, err := o.client.GetApps(&query)
 		if err != nil {
 			return nil, err
 		}
-
-		// []interface{} を []models.App に変換
-		interfaceSlice := result.([]any)
-		return utils.ConvertToSlice[models.App](interfaceSlice)
+		return utils.ConvertToApps(result.([]any))
 	}, DefaultPageSize)
 }
 
 // GetAppsDetails retrieves apps with user details from Onelogin
 func (o *Onelogin) GetAppsDetails(query AppQuery) ([]AppDetails, error) {
-	// GetAppsを内部的に呼び出してアプリ情報を取得
 	apps, err := o.GetApps(query)
 	if err != nil {
 		return nil, err
 	}
 
-	// 各アプリに対してユーザー情報を取得
 	appsWithDetails := make([]AppDetails, len(apps))
 	for i, app := range apps {
 		appDetails := AppDetails{
 			App: app,
 		}
 
-		// アプリのIDが存在する場合のみユーザー情報を取得
 		if app.ID != nil {
 			users, err := o.GetAppUsers(int(*app.ID))
 			if err != nil {
-				// ユーザー情報の取得に失敗した場合は空のスライスを設定
-				appDetails.Users = []models.User{}
+				appDetails.Users = []User{}
 			} else {
-				appDetails.Users = users
+				if users == nil {
+					appDetails.Users = []User{}
+				} else {
+					appDetails.Users = users
+				}
 			}
 		}
 
@@ -74,13 +59,16 @@ func (o *Onelogin) GetAppsDetails(query AppQuery) ([]AppDetails, error) {
 }
 
 // GetAppUsers retrieves users for a specific app from Onelogin
-func (o *Onelogin) GetAppUsers(appID int) ([]models.User, error) {
-	result, err := o.client.GetAppUsers(appID)
-	if err != nil {
-		return nil, err
+func (o *Onelogin) GetAppUsers(appID int) ([]User, error) {
+	query := UserQuery{
+		Limit: strconv.Itoa(DefaultPageSize),
 	}
-
-	// []interface{} を []models.User に変換
-	interfaceSlice := result.([]any)
-	return utils.ConvertToSlice[models.User](interfaceSlice)
+	return utils.Paginate(func(page int) ([]User, error) {
+		query.Page = strconv.Itoa(page)
+		result, err := o.client.GetAppUsers(appID, &query)
+		if err != nil {
+			return nil, err
+		}
+		return utils.ConvertToUsers(result.([]any))
+	}, DefaultPageSize)
 }
