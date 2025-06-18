@@ -9,11 +9,15 @@ const (
 	DefaultPageSize = 1000
 )
 
-type User = models.User
-type UserQuery = models.UserQuery
+type (
+	User      = models.User
+	UserQuery = models.UserQuery
+)
 
-type App = models.App
-type AppQuery = models.AppQuery
+type (
+	App      = models.App
+	AppQuery = models.AppQuery
+)
 
 type Client interface {
 	GetUsers(query models.Queryable) (any, error)

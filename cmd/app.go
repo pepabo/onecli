@@ -17,9 +17,9 @@ var appCmd = &cobra.Command{
 }
 
 var (
-	appQueryName   string
-	appOutput      string
-	appDetail      bool
+	appQueryName string
+	appOutput    string
+	appDetail    bool
 )
 
 var appListCmd = &cobra.Command{

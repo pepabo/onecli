@@ -16,12 +16,12 @@ var userCmd = &cobra.Command{
 }
 
 var (
-	userQueryEmail   string
-	userQueryUsername string
+	userQueryEmail     string
+	userQueryUsername  string
 	userQueryFirstname string
-	userQueryLastname string
-	userQueryUserID   string
-	output            string
+	userQueryLastname  string
+	userQueryUserID    string
+	output             string
 )
 
 // initClient initializes the OneLogin client
@@ -143,11 +143,11 @@ var addCmd = &cobra.Command{
 
 func getUserQuery() onelogin.UserQuery {
 	return onelogin.UserQuery{
-		Email: &userQueryEmail,
-		Username: &userQueryUsername,
+		Email:     &userQueryEmail,
+		Username:  &userQueryUsername,
 		Firstname: &userQueryFirstname,
-		Lastname: &userQueryLastname,
-		UserIDs: &userQueryUserID,
+		Lastname:  &userQueryLastname,
+		UserIDs:   &userQueryUserID,
 	}
 }
 
