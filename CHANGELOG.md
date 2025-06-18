@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.3.3](https://github.com/pepabo/onecli/compare/v0.3.2...v0.3.3) - 2025-06-18
+- fix: trigger release workflow only via workflow_dispatch by @buty4649 in https://github.com/pepabo/onecli/pull/21
+
 ## [v0.3.2](https://github.com/pepabo/onecli/compare/v0.3.1...v0.3.2) - 2025-06-18
 - feat: Add pagination support to GetAppUsers and refactor related code by @buty4649 in https://github.com/pepabo/onecli/pull/19
 
