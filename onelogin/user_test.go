@@ -30,6 +30,11 @@ func (m *MockClient) CreateUser(user models.User) (interface{}, error) {
 	return args.Get(0), args.Error(1)
 }
 
+func (m *MockClient) GetApps(query models.Queryable) (interface{}, error) {
+	args := m.Called(query)
+	return args.Get(0), args.Error(1)
+}
+
 func TestGetUsers(t *testing.T) {
 	tests := []struct {
 		name          string

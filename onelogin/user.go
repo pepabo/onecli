@@ -49,7 +49,7 @@ func (o *Onelogin) GetUsers(query UserQuery) ([]models.User, error) {
 
 		// []interface{} を []models.User に変換
 		interfaceSlice := result.([]interface{})
-		return utils.ConvertToUsers(interfaceSlice)
+		return utils.ConvertToSlice[models.User](interfaceSlice)
 	}, DefaultPageSize)
 }
 
