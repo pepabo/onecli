@@ -6,34 +6,10 @@ import (
 	"testing"
 
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
+	"github.com/pepabo/onecli/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-// MockClient is a mock implementation of the Onelogin client
-type MockClient struct {
-	mock.Mock
-}
-
-func (m *MockClient) GetUsers(query models.Queryable) (interface{}, error) {
-	args := m.Called(query)
-	return args.Get(0), args.Error(1)
-}
-
-func (m *MockClient) UpdateUser(userID int, user models.User) (interface{}, error) {
-	args := m.Called(userID, user)
-	return args.Get(0), args.Error(1)
-}
-
-func (m *MockClient) CreateUser(user models.User) (interface{}, error) {
-	args := m.Called(user)
-	return args.Get(0), args.Error(1)
-}
-
-func (m *MockClient) GetApps(query models.Queryable) (interface{}, error) {
-	args := m.Called(query)
-	return args.Get(0), args.Error(1)
-}
 
 func TestGetUsers(t *testing.T) {
 	tests := []struct {
@@ -118,7 +94,7 @@ func TestGetUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockClient := new(MockClient)
+			mockClient := new(utils.MockClient)
 			o := &Onelogin{
 				client: mockClient,
 			}
@@ -208,7 +184,7 @@ func TestCreateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockClient := new(MockClient)
+			mockClient := new(utils.MockClient)
 			o := &Onelogin{
 				client: mockClient,
 			}

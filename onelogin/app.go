@@ -34,3 +34,15 @@ func (o *Onelogin) GetApps(query AppQuery) ([]models.App, error) {
 		return utils.ConvertToSlice[models.App](interfaceSlice)
 	}, DefaultPageSize)
 }
+
+// GetAppUsers retrieves users for a specific app from Onelogin
+func (o *Onelogin) GetAppUsers(appID int) ([]models.User, error) {
+	result, err := o.client.GetAppUsers(appID)
+	if err != nil {
+		return nil, err
+	}
+
+	// []interface{} を []models.User に変換
+	interfaceSlice := result.([]interface{})
+	return utils.ConvertToSlice[models.User](interfaceSlice)
+}

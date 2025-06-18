@@ -16,6 +16,7 @@ type OneloginClient interface {
 	UpdateUser(userID int, user models.User) (interface{}, error)
 	CreateUser(user models.User) (interface{}, error)
 	GetApps(query models.Queryable) (interface{}, error)
+	GetAppUsers(appID int) (interface{}, error)
 }
 
 // Onelogin represents the Onelogin client
