@@ -38,6 +38,7 @@ func Execute() error {
 
 func init() {
 	rootCmd.AddCommand(userCmd)
+	rootCmd.AddCommand(appCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 }
