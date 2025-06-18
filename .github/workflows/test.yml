@@ -25,5 +25,8 @@ jobs:
         version: latest
         args: --timeout=5m
 
+    - name: Run modernize
+      run: go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
+
     - name: Run tests
       run: go test -v ./...

@@ -18,7 +18,7 @@ const (
 
 // PrintOutput は指定された形式でデータを出力します
 // writerがnilの場合はos.Stdoutを使用します
-func PrintOutput(data interface{}, format OutputFormat, writer io.Writer) error {
+func PrintOutput(data any, format OutputFormat, writer io.Writer) error {
 	if writer == nil {
 		writer = os.Stdout
 	}

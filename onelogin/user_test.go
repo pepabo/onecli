@@ -15,7 +15,7 @@ func TestGetUsers(t *testing.T) {
 	tests := []struct {
 		name          string
 		query         UserQuery
-		mockResponse  []interface{}
+		mockResponse  []any
 		mockError     error
 		expectedUsers []models.User
 		expectedError error
@@ -25,8 +25,8 @@ func TestGetUsers(t *testing.T) {
 			query: UserQuery{
 				Email: "test@example.com",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":        1,
 					"email":     "test@example.com",
 					"username":  "testuser",
@@ -49,15 +49,15 @@ func TestGetUsers(t *testing.T) {
 			query: UserQuery{
 				Firstname: "Test",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":        1,
 					"email":     "test1@example.com",
 					"username":  "testuser1",
 					"firstname": "Test",
 					"lastname":  "User1",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":        2,
 					"email":     "test2@example.com",
 					"username":  "testuser2",
@@ -141,7 +141,7 @@ func TestCreateUser(t *testing.T) {
 	tests := []struct {
 		name          string
 		inputUser     models.User
-		mockResponse  interface{}
+		mockResponse  any
 		mockError     error
 		expectedUser  models.User
 		expectedError error
@@ -154,7 +154,7 @@ func TestCreateUser(t *testing.T) {
 				Firstname: "New",
 				Lastname:  "User",
 			},
-			mockResponse: map[string]interface{}{
+			mockResponse: map[string]any{
 				"id":        float64(3),
 				"email":     "newuser@example.com",
 				"username":  "newuser",

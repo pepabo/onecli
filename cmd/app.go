@@ -34,7 +34,7 @@ var appListCmd = &cobra.Command{
 			return err
 		}
 
-		var result interface{}
+		var result any
 		var err2 error
 
 		if appDetail {

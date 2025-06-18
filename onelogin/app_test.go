@@ -13,7 +13,7 @@ func TestGetApps(t *testing.T) {
 	tests := []struct {
 		name          string
 		query         AppQuery
-		mockResponse  []interface{}
+		mockResponse  []any
 		mockError     error
 		expectedApps  []models.App
 		expectedError error
@@ -23,8 +23,8 @@ func TestGetApps(t *testing.T) {
 			query: AppQuery{
 				Name: "Test App",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App",
 				},
@@ -39,12 +39,12 @@ func TestGetApps(t *testing.T) {
 		{
 			name:  "successful app retrieval with multiple apps",
 			query: AppQuery{},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App 1",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":   float64(2),
 					"name": "Test App 2",
 				},
@@ -65,7 +65,7 @@ func TestGetApps(t *testing.T) {
 			query: AppQuery{
 				Name: "Non-existent App",
 			},
-			mockResponse: []interface{}{},
+			mockResponse: []any{},
 			expectedApps: []models.App{},
 		},
 		{
@@ -118,8 +118,8 @@ func TestGetAppsDetails(t *testing.T) {
 	tests := []struct {
 		name              string
 		query             AppQuery
-		mockResponse      []interface{}
-		mockUsersResponse []interface{}
+		mockResponse      []any
+		mockUsersResponse []any
 		mockUsersError    error
 		expectedApps      []AppDetails
 		expectedError     error
@@ -129,21 +129,21 @@ func TestGetAppsDetails(t *testing.T) {
 			query: AppQuery{
 				Name: "Test App",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App",
 				},
 			},
-			mockUsersResponse: []interface{}{
-				map[string]interface{}{
+			mockUsersResponse: []any{
+				map[string]any{
 					"id":        float64(1),
 					"email":     "user1@example.com",
 					"username":  "user1",
 					"firstname": "User",
 					"lastname":  "One",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":        float64(2),
 					"email":     "user2@example.com",
 					"username":  "user2",
@@ -181,13 +181,13 @@ func TestGetAppsDetails(t *testing.T) {
 			query: AppQuery{
 				Name: "Test App",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App",
 				},
 			},
-			mockUsersResponse: []interface{}{},
+			mockUsersResponse: []any{},
 			expectedApps: []AppDetails{
 				{
 					App: models.App{
@@ -203,8 +203,8 @@ func TestGetAppsDetails(t *testing.T) {
 			query: AppQuery{
 				Name: "Test App",
 			},
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App",
 				},
@@ -242,7 +242,7 @@ func TestGetAppsDetails(t *testing.T) {
 
 			// Set up mock expectations for GetAppUsers if app has ID
 			if len(tt.mockResponse) > 0 {
-				if appData, ok := tt.mockResponse[0].(map[string]interface{}); ok {
+				if appData, ok := tt.mockResponse[0].(map[string]any); ok {
 					if appID, ok := appData["id"].(float64); ok {
 						if tt.mockUsersError != nil {
 							mockClient.On("GetAppUsers", int(appID)).Return(tt.mockUsersResponse, tt.mockUsersError)
@@ -275,18 +275,18 @@ func TestGetAppsWithPagination(t *testing.T) {
 	tests := []struct {
 		name          string
 		query         AppQuery
-		mockResponses [][]interface{}
+		mockResponses [][]any
 		expectedApps  []models.App
 		expectedError error
 	}{
 		{
 			name:  "successful app retrieval with pagination",
 			query: AppQuery{},
-			mockResponses: [][]interface{}{
-				func() []interface{} {
-					result := make([]interface{}, DefaultPageSize)
-					for i := 0; i < DefaultPageSize; i++ {
-						result[i] = map[string]interface{}{
+			mockResponses: [][]any{
+				func() []any {
+					result := make([]any, DefaultPageSize)
+					for i := range DefaultPageSize {
+						result[i] = map[string]any{
 							"id":   float64(i + 1),
 							"name": "Test App " + strconv.Itoa(i+1),
 						}
@@ -294,15 +294,15 @@ func TestGetAppsWithPagination(t *testing.T) {
 					return result
 				}(),
 				{
-					map[string]interface{}{
+					map[string]any{
 						"id":   float64(1001),
 						"name": "Test App 1001",
 					},
-					map[string]interface{}{
+					map[string]any{
 						"id":   float64(1002),
 						"name": "Test App 1002",
 					},
-					map[string]interface{}{
+					map[string]any{
 						"id":   float64(1003),
 						"name": "Test App 1003",
 					},
@@ -310,7 +310,7 @@ func TestGetAppsWithPagination(t *testing.T) {
 			},
 			expectedApps: func() []models.App {
 				result := make([]models.App, DefaultPageSize)
-				for i := 0; i < DefaultPageSize; i++ {
+				for i := range DefaultPageSize {
 					id := int32(i + 1)
 					name := "Test App " + strconv.Itoa(i+1)
 					result[i] = models.App{
@@ -379,7 +379,7 @@ func TestGetAppUsers(t *testing.T) {
 	tests := []struct {
 		name          string
 		appID         int
-		mockResponse  []interface{}
+		mockResponse  []any
 		mockError     error
 		expectedUsers []models.User
 		expectedError error
@@ -387,15 +387,15 @@ func TestGetAppUsers(t *testing.T) {
 		{
 			name:  "successful app users retrieval",
 			appID: 123,
-			mockResponse: []interface{}{
-				map[string]interface{}{
+			mockResponse: []any{
+				map[string]any{
 					"id":        float64(1),
 					"email":     "user1@example.com",
 					"username":  "user1",
 					"firstname": "User",
 					"lastname":  "One",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":        float64(2),
 					"email":     "user2@example.com",
 					"username":  "user2",
@@ -423,7 +423,7 @@ func TestGetAppUsers(t *testing.T) {
 		{
 			name:          "successful app users retrieval with empty result",
 			appID:         456,
-			mockResponse:  []interface{}{},
+			mockResponse:  []any{},
 			expectedUsers: []models.User{},
 		},
 		{

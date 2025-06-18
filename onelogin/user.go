@@ -48,13 +48,13 @@ func (o *Onelogin) GetUsers(query UserQuery) ([]models.User, error) {
 		}
 
 		// []interface{} を []models.User に変換
-		interfaceSlice := result.([]interface{})
+		interfaceSlice := result.([]any)
 		return utils.ConvertToSlice[models.User](interfaceSlice)
 	}, DefaultPageSize)
 }
 
 // UpdateUser updates a user in Onelogin
-func (o *Onelogin) UpdateUser(userID int, user models.User) (interface{}, error) {
+func (o *Onelogin) UpdateUser(userID int, user models.User) (any, error) {
 	return o.client.UpdateUser(userID, user)
 }
 
@@ -78,7 +78,7 @@ func (o *Onelogin) CreateUser(user models.User) (models.User, error) {
 		return models.User{}, fmt.Errorf("error creating user: %v", err)
 	}
 
-	createdUserMap, ok := createdUserInterface.(map[string]interface{})
+	createdUserMap, ok := createdUserInterface.(map[string]any)
 	if !ok {
 		return models.User{}, fmt.Errorf("error asserting created user to map[string]interface{}")
 	}
