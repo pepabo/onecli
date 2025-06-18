@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/onelogin"
 	"github.com/pepabo/onecli/utils"
 	"github.com/spf13/cobra"
@@ -17,8 +16,12 @@ var userCmd = &cobra.Command{
 }
 
 var (
-	queryParams onelogin.UserQuery
-	output      string
+	userQueryEmail     string
+	userQueryUsername  string
+	userQueryFirstname string
+	userQueryLastname  string
+	userQueryUserID    string
+	output             string
 )
 
 // initClient initializes the OneLogin client
@@ -42,7 +45,8 @@ var listCmd = &cobra.Command{
 			return err
 		}
 
-		users, err := client.GetUsers(queryParams)
+		query := getUserQuery()
+		users, err := client.GetUsers(query)
 		if err != nil {
 			return fmt.Errorf("error getting users: %v", err)
 		}
@@ -60,11 +64,6 @@ var modifyCmd = &cobra.Command{
 	Long:  `Modify user information in your OneLogin organization`,
 }
 
-// isQueryParamsEmpty checks if all query parameters are empty
-func isQueryParamsEmpty(params onelogin.UserQuery) bool {
-	return params.Email == "" && params.Username == "" && params.Firstname == "" && params.Lastname == "" && params.ID == ""
-}
-
 var modifyEmailCmd = &cobra.Command{
 	Use:          "email <new-email>",
 	Aliases:      []string{"m", "mod"},
@@ -73,7 +72,8 @@ var modifyEmailCmd = &cobra.Command{
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if isQueryParamsEmpty(queryParams) {
+		query := getUserQuery()
+		if isQueryParamsEmpty(query) {
 			return fmt.Errorf("at least one query parameter (email, username, firstname, lastname, or user-id) must be specified")
 		}
 
@@ -84,7 +84,7 @@ var modifyEmailCmd = &cobra.Command{
 			return err
 		}
 
-		users, err := client.GetUsers(queryParams)
+		users, err := client.GetUsers(query)
 		if err != nil {
 			return fmt.Errorf("error getting users: %v", err)
 		}
@@ -100,7 +100,7 @@ var modifyEmailCmd = &cobra.Command{
 		user := users[0]
 		user.Email = newEmail
 
-		_, err = client.UpdateUser(int(user.ID), user)
+		err = client.UpdateUser(int(user.ID), user)
 		if err != nil {
 			return fmt.Errorf("error updating user: %v", err)
 		}
@@ -125,20 +125,35 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("error initializing OneLogin client: %v", err)
 		}
 
-		newUser := models.User{
+		newUser := onelogin.User{
 			Firstname: firstName,
 			Lastname:  lastName,
 			Email:     email,
 		}
 
-		createdUser, err := client.CreateUser(newUser)
+		err = client.CreateUser(newUser)
 		if err != nil {
 			return fmt.Errorf("error creating user: %v", err)
 		}
 
-		fmt.Printf("Successfully added user: %s %s with email: %s\n", createdUser.Firstname, createdUser.Lastname, createdUser.Email)
+		fmt.Printf("Successfully added user: %s %s with email: %s\n", newUser.Firstname, newUser.Lastname, newUser.Email)
 		return nil
 	},
+}
+
+func getUserQuery() onelogin.UserQuery {
+	return onelogin.UserQuery{
+		Email:     &userQueryEmail,
+		Username:  &userQueryUsername,
+		Firstname: &userQueryFirstname,
+		Lastname:  &userQueryLastname,
+		UserIDs:   &userQueryUserID,
+	}
+}
+
+// isQueryParamsEmpty checks if all query parameters are empty
+func isQueryParamsEmpty(params onelogin.UserQuery) bool {
+	return params.Email == nil && params.Username == nil && params.Firstname == nil && params.Lastname == nil && params.UserIDs == nil
 }
 
 func init() {
@@ -148,15 +163,15 @@ func init() {
 	userCmd.AddCommand(addCmd)
 
 	listCmd.Flags().StringVarP(&output, "output", "o", "yaml", "Output format (yaml, json)")
-	listCmd.Flags().StringVar(&queryParams.Email, "email", "", "Filter users by email")
-	listCmd.Flags().StringVar(&queryParams.Username, "username", "", "Filter users by username")
-	listCmd.Flags().StringVar(&queryParams.Firstname, "firstname", "", "Filter users by first name")
-	listCmd.Flags().StringVar(&queryParams.Lastname, "lastname", "", "Filter users by last name")
-	listCmd.Flags().StringVar(&queryParams.ID, "user-id", "", "Filter users by user ID")
+	listCmd.Flags().StringVar(&userQueryEmail, "email", "", "Filter users by email")
+	listCmd.Flags().StringVar(&userQueryUsername, "username", "", "Filter users by username")
+	listCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Filter users by first name")
+	listCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Filter users by last name")
+	listCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Filter users by user ID")
 
-	modifyEmailCmd.Flags().StringVar(&queryParams.Email, "email", "", "Query by email")
-	modifyEmailCmd.Flags().StringVar(&queryParams.Username, "username", "", "Query by username")
-	modifyEmailCmd.Flags().StringVar(&queryParams.Firstname, "firstname", "", "Query by first name")
-	modifyEmailCmd.Flags().StringVar(&queryParams.Lastname, "lastname", "", "Query by last name")
-	modifyEmailCmd.Flags().StringVar(&queryParams.ID, "user-id", "", "Query by user ID")
+	modifyEmailCmd.Flags().StringVar(&userQueryEmail, "email", "", "Query by email")
+	modifyEmailCmd.Flags().StringVar(&userQueryUsername, "username", "", "Query by username")
+	modifyEmailCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Query by first name")
+	modifyEmailCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Query by last name")
+	modifyEmailCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Query by user ID")
 }

@@ -1,7 +1,6 @@
 package onelogin
 
 import (
-	o "github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin"
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 )
 
@@ -10,23 +9,31 @@ const (
 	DefaultPageSize = 1000
 )
 
-// OneloginClient represents the interface for Onelogin client operations
-type OneloginClient interface {
+type (
+	User      = models.User
+	UserQuery = models.UserQuery
+)
+
+type (
+	App      = models.App
+	AppQuery = models.AppQuery
+)
+
+type Client interface {
 	GetUsers(query models.Queryable) (any, error)
 	UpdateUser(userID int, user models.User) (any, error)
 	CreateUser(user models.User) (any, error)
 	GetApps(query models.Queryable) (any, error)
-	GetAppUsers(appID int) (any, error)
+	GetAppUsers(appID int, query models.Queryable) (any, error)
 }
 
-// Onelogin represents the Onelogin client
 type Onelogin struct {
-	client OneloginClient
+	client Client
 }
 
 // New creates a new Onelogin client
 func New() (*Onelogin, error) {
-	client, err := o.NewOneloginSDK()
+	client, err := NewOneloginSDKWrapper()
 	if err != nil {
 		return nil, err
 	}

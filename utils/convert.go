@@ -26,10 +26,10 @@ func ConvertToSlice[T any](data []any) ([]T, error) {
 	return result, nil
 }
 
-func ConvertToUsers(data []any) ([]models.User, error) {
-	return ConvertToSlice[models.User](data)
-}
-
 func ConvertToApps(data []any) ([]models.App, error) {
 	return ConvertToSlice[models.App](data)
+}
+
+func ConvertToUsers(data []any) ([]models.User, error) {
+	return ConvertToSlice[models.User](data)
 }

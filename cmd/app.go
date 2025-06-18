@@ -17,9 +17,9 @@ var appCmd = &cobra.Command{
 }
 
 var (
-	appQueryParams onelogin.AppQuery
-	appOutput      string
-	appDetail      bool
+	appQueryName string
+	appOutput    string
+	appDetail    bool
 )
 
 var appListCmd = &cobra.Command{
@@ -36,11 +36,12 @@ var appListCmd = &cobra.Command{
 
 		var result any
 		var err2 error
+		query := getAppQuery()
 
 		if appDetail {
-			result, err2 = client.GetAppsDetails(appQueryParams)
+			result, err2 = client.GetAppsDetails(query)
 		} else {
-			result, err2 = client.GetApps(appQueryParams)
+			result, err2 = client.GetApps(query)
 		}
 
 		if err2 != nil {
@@ -84,12 +85,18 @@ var appListUsersCmd = &cobra.Command{
 	},
 }
 
+func getAppQuery() onelogin.AppQuery {
+	return onelogin.AppQuery{
+		Name: &appQueryName,
+	}
+}
+
 func init() {
 	appCmd.AddCommand(appListCmd)
 	appCmd.AddCommand(appListUsersCmd)
 
 	appListCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")
-	appListCmd.Flags().StringVar(&appQueryParams.Name, "name", "", "Filter apps by name")
+	appListCmd.Flags().StringVar(&appQueryName, "name", "", "Filter apps by name")
 	appListCmd.Flags().BoolVar(&appDetail, "detail", false, "Include user details for each app")
 
 	appListUsersCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")

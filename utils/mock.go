@@ -35,7 +35,7 @@ func (m *MockClient) GetApps(query models.Queryable) (any, error) {
 }
 
 // GetAppUsers mocks the GetAppUsers method
-func (m *MockClient) GetAppUsers(appID int) (any, error) {
-	args := m.Called(appID)
+func (m *MockClient) GetAppUsers(appID int, query models.Queryable) (any, error) {
+	args := m.Called(appID, query)
 	return args.Get(0), args.Error(1)
 }

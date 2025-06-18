@@ -1,6 +1,5 @@
 package utils
 
-// Paginate はページネーションをサポートする関数を実行し、全結果を取得します
 func Paginate[T any](fetch func(page int) ([]T, error), limit int) ([]T, error) {
 	var allResults []T
 	page := 1

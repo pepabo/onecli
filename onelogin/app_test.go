@@ -7,6 +7,7 @@ import (
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/utils"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestGetApps(t *testing.T) {
@@ -21,7 +22,7 @@ func TestGetApps(t *testing.T) {
 		{
 			name: "successful app retrieval with name query",
 			query: AppQuery{
-				Name: "Test App",
+				Name: func() *string { v := "Test App"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -63,7 +64,7 @@ func TestGetApps(t *testing.T) {
 		{
 			name: "successful app retrieval with empty result",
 			query: AppQuery{
-				Name: "Non-existent App",
+				Name: func() *string { v := "Non-existent App"; return &v }(),
 			},
 			mockResponse: []any{},
 			expectedApps: []models.App{},
@@ -71,7 +72,7 @@ func TestGetApps(t *testing.T) {
 		{
 			name: "error from client",
 			query: AppQuery{
-				Name: "Test App",
+				Name: func() *string { v := "Test App"; return &v }(),
 			},
 			mockError:     assert.AnError,
 			expectedError: assert.AnError,
@@ -90,8 +91,8 @@ func TestGetApps(t *testing.T) {
 				Limit: strconv.Itoa(DefaultPageSize),
 				Page:  "1",
 			}
-			if tt.query.Name != "" {
-				expectedQuery.Name = &tt.query.Name
+			if tt.query.Name != nil && *tt.query.Name != "" {
+				expectedQuery.Name = tt.query.Name
 			}
 
 			mockClient.On("GetApps", expectedQuery).Return(tt.mockResponse, tt.mockError)
@@ -127,7 +128,7 @@ func TestGetAppsDetails(t *testing.T) {
 		{
 			name: "successful app retrieval with user details",
 			query: AppQuery{
-				Name: "Test App",
+				Name: func() *string { v := "Test App"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -179,7 +180,7 @@ func TestGetAppsDetails(t *testing.T) {
 		{
 			name: "successful app retrieval with empty users",
 			query: AppQuery{
-				Name: "Test App",
+				Name: func() *string { v := "Test App"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -201,7 +202,7 @@ func TestGetAppsDetails(t *testing.T) {
 		{
 			name: "app retrieval with user fetch error",
 			query: AppQuery{
-				Name: "Test App",
+				Name: func() *string { v := "Test App"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -234,8 +235,8 @@ func TestGetAppsDetails(t *testing.T) {
 				Limit: strconv.Itoa(DefaultPageSize),
 				Page:  "1",
 			}
-			if tt.query.Name != "" {
-				expectedQuery.Name = &tt.query.Name
+			if tt.query.Name != nil && *tt.query.Name != "" {
+				expectedQuery.Name = tt.query.Name
 			}
 
 			mockClient.On("GetApps", expectedQuery).Return(tt.mockResponse, nil)
@@ -244,10 +245,14 @@ func TestGetAppsDetails(t *testing.T) {
 			if len(tt.mockResponse) > 0 {
 				if appData, ok := tt.mockResponse[0].(map[string]any); ok {
 					if appID, ok := appData["id"].(float64); ok {
+						userQuery := &models.UserQuery{
+							Limit: strconv.Itoa(DefaultPageSize),
+							Page:  "1",
+						}
 						if tt.mockUsersError != nil {
-							mockClient.On("GetAppUsers", int(appID)).Return(tt.mockUsersResponse, tt.mockUsersError)
+							mockClient.On("GetAppUsers", int(appID), userQuery).Return(tt.mockUsersResponse, tt.mockUsersError)
 						} else {
-							mockClient.On("GetAppUsers", int(appID)).Return(tt.mockUsersResponse, nil)
+							mockClient.On("GetAppUsers", int(appID), userQuery).Return(tt.mockUsersResponse, nil)
 						}
 					}
 				}
@@ -343,8 +348,8 @@ func TestGetAppsWithPagination(t *testing.T) {
 				Limit: strconv.Itoa(DefaultPageSize),
 				Page:  "1",
 			}
-			if tt.query.Name != "" {
-				expectedQuery1.Name = &tt.query.Name
+			if tt.query.Name != nil && *tt.query.Name != "" {
+				expectedQuery1.Name = tt.query.Name
 			}
 			mockClient.On("GetApps", expectedQuery1).Return(tt.mockResponses[0], nil)
 
@@ -352,8 +357,8 @@ func TestGetAppsWithPagination(t *testing.T) {
 				Limit: strconv.Itoa(DefaultPageSize),
 				Page:  "2",
 			}
-			if tt.query.Name != "" {
-				expectedQuery2.Name = &tt.query.Name
+			if tt.query.Name != nil && *tt.query.Name != "" {
+				expectedQuery2.Name = tt.query.Name
 			}
 			mockClient.On("GetApps", expectedQuery2).Return(tt.mockResponses[1], nil)
 
@@ -441,7 +446,7 @@ func TestGetAppUsers(t *testing.T) {
 				client: mockClient,
 			}
 
-			mockClient.On("GetAppUsers", tt.appID).Return(tt.mockResponse, tt.mockError)
+			mockClient.On("GetAppUsers", tt.appID, mock.Anything).Return(tt.mockResponse, tt.mockError)
 
 			users, err := o.GetAppUsers(tt.appID)
 
