@@ -9,6 +9,3 @@ updates:
     labels:
       - "dependencies"
       - "go"
-    commit-message:
-      prefix: "deps"
-      include: "scope"
