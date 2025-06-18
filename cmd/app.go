@@ -19,6 +19,7 @@ var appCmd = &cobra.Command{
 var (
 	appQueryParams onelogin.AppQuery
 	appOutput      string
+	appDetail      bool
 )
 
 var appListCmd = &cobra.Command{
@@ -33,12 +34,20 @@ var appListCmd = &cobra.Command{
 			return err
 		}
 
-		apps, err := client.GetApps(appQueryParams)
-		if err != nil {
-			return fmt.Errorf("error getting apps: %v", err)
+		var result interface{}
+		var err2 error
+
+		if appDetail {
+			result, err2 = client.GetAppsDetails(appQueryParams)
+		} else {
+			result, err2 = client.GetApps(appQueryParams)
 		}
 
-		if err := utils.PrintOutput(apps, utils.OutputFormat(appOutput), os.Stdout); err != nil {
+		if err2 != nil {
+			return fmt.Errorf("error getting apps: %v", err2)
+		}
+
+		if err := utils.PrintOutput(result, utils.OutputFormat(appOutput), os.Stdout); err != nil {
 			return fmt.Errorf("error printing output: %v", err)
 		}
 		return nil
@@ -81,6 +90,7 @@ func init() {
 
 	appListCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")
 	appListCmd.Flags().StringVar(&appQueryParams.Name, "name", "", "Filter apps by name")
+	appListCmd.Flags().BoolVar(&appDetail, "detail", false, "Include user details for each app")
 
 	appListUsersCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")
 }

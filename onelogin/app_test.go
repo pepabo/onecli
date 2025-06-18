@@ -114,6 +114,163 @@ func TestGetApps(t *testing.T) {
 	}
 }
 
+func TestGetAppsDetails(t *testing.T) {
+	tests := []struct {
+		name              string
+		query             AppQuery
+		mockResponse      []interface{}
+		mockUsersResponse []interface{}
+		mockUsersError    error
+		expectedApps      []AppDetails
+		expectedError     error
+	}{
+		{
+			name: "successful app retrieval with user details",
+			query: AppQuery{
+				Name: "Test App",
+			},
+			mockResponse: []interface{}{
+				map[string]interface{}{
+					"id":   float64(1),
+					"name": "Test App",
+				},
+			},
+			mockUsersResponse: []interface{}{
+				map[string]interface{}{
+					"id":        float64(1),
+					"email":     "user1@example.com",
+					"username":  "user1",
+					"firstname": "User",
+					"lastname":  "One",
+				},
+				map[string]interface{}{
+					"id":        float64(2),
+					"email":     "user2@example.com",
+					"username":  "user2",
+					"firstname": "User",
+					"lastname":  "Two",
+				},
+			},
+			expectedApps: []AppDetails{
+				{
+					App: models.App{
+						ID:   func() *int32 { v := int32(1); return &v }(),
+						Name: func() *string { v := "Test App"; return &v }(),
+					},
+					Users: []models.User{
+						{
+							ID:        1,
+							Email:     "user1@example.com",
+							Username:  "user1",
+							Firstname: "User",
+							Lastname:  "One",
+						},
+						{
+							ID:        2,
+							Email:     "user2@example.com",
+							Username:  "user2",
+							Firstname: "User",
+							Lastname:  "Two",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "successful app retrieval with empty users",
+			query: AppQuery{
+				Name: "Test App",
+			},
+			mockResponse: []interface{}{
+				map[string]interface{}{
+					"id":   float64(1),
+					"name": "Test App",
+				},
+			},
+			mockUsersResponse: []interface{}{},
+			expectedApps: []AppDetails{
+				{
+					App: models.App{
+						ID:   func() *int32 { v := int32(1); return &v }(),
+						Name: func() *string { v := "Test App"; return &v }(),
+					},
+					Users: []models.User{},
+				},
+			},
+		},
+		{
+			name: "app retrieval with user fetch error",
+			query: AppQuery{
+				Name: "Test App",
+			},
+			mockResponse: []interface{}{
+				map[string]interface{}{
+					"id":   float64(1),
+					"name": "Test App",
+				},
+			},
+			mockUsersError: assert.AnError,
+			expectedApps: []AppDetails{
+				{
+					App: models.App{
+						ID:   func() *int32 { v := int32(1); return &v }(),
+						Name: func() *string { v := "Test App"; return &v }(),
+					},
+					Users: []models.User{},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(utils.MockClient)
+			o := &Onelogin{
+				client: mockClient,
+			}
+
+			// Set up mock expectations
+			expectedQuery := &models.AppQuery{
+				Limit: strconv.Itoa(DefaultPageSize),
+				Page:  "1",
+			}
+			if tt.query.Name != "" {
+				expectedQuery.Name = &tt.query.Name
+			}
+
+			mockClient.On("GetApps", expectedQuery).Return(tt.mockResponse, nil)
+
+			// Set up mock expectations for GetAppUsers if app has ID
+			if len(tt.mockResponse) > 0 {
+				if appData, ok := tt.mockResponse[0].(map[string]interface{}); ok {
+					if appID, ok := appData["id"].(float64); ok {
+						if tt.mockUsersError != nil {
+							mockClient.On("GetAppUsers", int(appID)).Return(tt.mockUsersResponse, tt.mockUsersError)
+						} else {
+							mockClient.On("GetAppUsers", int(appID)).Return(tt.mockUsersResponse, nil)
+						}
+					}
+				}
+			}
+
+			apps, err := o.GetAppsDetails(tt.query)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				if apps == nil {
+					apps = []AppDetails{}
+				}
+				assert.Equal(t, tt.expectedApps, apps)
+			}
+
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
 func TestGetAppsWithPagination(t *testing.T) {
 	tests := []struct {
 		name          string
