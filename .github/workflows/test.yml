@@ -13,11 +13,20 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version-file: go.mod
         cache: true
 
     - name: Install dependencies
       run: go mod download
+
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: latest
+        args: --timeout=5m
+
+    - name: Run modernize
+      run: go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest -test ./...
 
     - name: Run tests
       run: go test -v ./...

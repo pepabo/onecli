@@ -1,4 +1,6 @@
 package version
 
-const Name string = "onecli"
-const Version = "0.2.0"
+const (
+	Name    string = "onecli"
+	Version string = "0.2.0"
+)

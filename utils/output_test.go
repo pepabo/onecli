@@ -76,7 +76,7 @@ func TestPrintOutput(t *testing.T) {
 					Status:      1,
 				},
 			},
-			expected: []map[string]interface{}{
+			expected: []map[string]any{
 				{
 					"id":           1,
 					"username":     "testuser1",

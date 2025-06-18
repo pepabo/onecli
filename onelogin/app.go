@@ -36,7 +36,7 @@ func (o *Onelogin) GetApps(query AppQuery) ([]models.App, error) {
 		}
 
 		// []interface{} を []models.App に変換
-		interfaceSlice := result.([]interface{})
+		interfaceSlice := result.([]any)
 		return utils.ConvertToSlice[models.App](interfaceSlice)
 	}, DefaultPageSize)
 }
@@ -81,6 +81,6 @@ func (o *Onelogin) GetAppUsers(appID int) ([]models.User, error) {
 	}
 
 	// []interface{} を []models.User に変換
-	interfaceSlice := result.([]interface{})
+	interfaceSlice := result.([]any)
 	return utils.ConvertToSlice[models.User](interfaceSlice)
 }

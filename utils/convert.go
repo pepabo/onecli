@@ -6,7 +6,7 @@ import (
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 )
 
-func ConvertToSlice[T any](data []interface{}) ([]T, error) {
+func ConvertToSlice[T any](data []any) ([]T, error) {
 	result := make([]T, len(data))
 	for i, v := range data {
 		// map[string]interface{}をJSONに変換
@@ -26,10 +26,10 @@ func ConvertToSlice[T any](data []interface{}) ([]T, error) {
 	return result, nil
 }
 
-func ConvertToUsers(data []interface{}) ([]models.User, error) {
+func ConvertToUsers(data []any) ([]models.User, error) {
 	return ConvertToSlice[models.User](data)
 }
 
-func ConvertToApps(data []interface{}) ([]models.App, error) {
+func ConvertToApps(data []any) ([]models.App, error) {
 	return ConvertToSlice[models.App](data)
 }

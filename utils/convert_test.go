@@ -10,21 +10,21 @@ import (
 func TestConvertToSlice(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   []interface{}
+		input   []any
 		want    []models.User
 		wantErr bool
 	}{
 		{
 			name: "正常系: ユーザー情報の変換",
-			input: []interface{}{
-				map[string]interface{}{
+			input: []any{
+				map[string]any{
 					"id":        float64(1),
 					"username":  "testuser1",
 					"email":     "test1@example.com",
 					"firstname": "Test",
 					"lastname":  "User1",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":        float64(2),
 					"username":  "testuser2",
 					"email":     "test2@example.com",
@@ -52,7 +52,7 @@ func TestConvertToSlice(t *testing.T) {
 		},
 		{
 			name: "異常系: 不正なデータ",
-			input: []interface{}{
+			input: []any{
 				"invalid data",
 			},
 			want:    nil,
@@ -76,21 +76,21 @@ func TestConvertToSlice(t *testing.T) {
 func TestConvertToUsers(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   []interface{}
+		input   []any
 		want    []models.User
 		wantErr bool
 	}{
 		{
 			name: "正常系: ユーザー情報の変換",
-			input: []interface{}{
-				map[string]interface{}{
+			input: []any{
+				map[string]any{
 					"id":        float64(1),
 					"username":  "testuser1",
 					"email":     "test1@example.com",
 					"firstname": "Test",
 					"lastname":  "User1",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":        float64(2),
 					"username":  "testuser2",
 					"email":     "test2@example.com",
@@ -118,7 +118,7 @@ func TestConvertToUsers(t *testing.T) {
 		},
 		{
 			name: "異常系: 不正なデータ",
-			input: []interface{}{
+			input: []any{
 				"invalid data",
 			},
 			want:    nil,
@@ -142,18 +142,18 @@ func TestConvertToUsers(t *testing.T) {
 func TestConvertToApps(t *testing.T) {
 	tests := []struct {
 		name    string
-		input   []interface{}
+		input   []any
 		want    []models.App
 		wantErr bool
 	}{
 		{
 			name: "正常系: アプリ情報の変換",
-			input: []interface{}{
-				map[string]interface{}{
+			input: []any{
+				map[string]any{
 					"id":   float64(1),
 					"name": "Test App 1",
 				},
-				map[string]interface{}{
+				map[string]any{
 					"id":   float64(2),
 					"name": "Test App 2",
 				},
@@ -172,7 +172,7 @@ func TestConvertToApps(t *testing.T) {
 		},
 		{
 			name: "異常系: 不正なデータ",
-			input: []interface{}{
+			input: []any{
 				"invalid data",
 			},
 			want:    nil,
