@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.3.1](https://github.com/pepabo/onecli/compare/v0.3.0...v0.3.1) - 2025-06-18
+- fix: suppress double error output by removing redundant error print in main.go by @buty4649 in https://github.com/pepabo/onecli/pull/17
+
 ## [v0.3.0](https://github.com/pepabo/onecli/compare/v0.2.0...v0.3.0) - 2025-06-18
 - feat: add --detail flag to app list command by @buty4649 in https://github.com/pepabo/onecli/pull/6
 - Add golangci-lint configuration and update version by @buty4649 in https://github.com/pepabo/onecli/pull/7
