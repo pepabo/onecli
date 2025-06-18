@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/goccy/go-yaml v1.17.1
-	github.com/onelogin/onelogin-go-sdk/v4 v4.1.0
+	github.com/onelogin/onelogin-go-sdk/v4 v4.6.1
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 )
