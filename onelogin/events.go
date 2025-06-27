@@ -23,7 +23,6 @@ type Event struct {
 	DirectorySyncRunID   int32      `json:"directory_sync_run_id,omitempty"`
 	ErrorDescription     string     `json:"error_description,omitempty"`
 	EventTypeID          int32      `json:"event_type_id,omitempty"`
-	EventTypeIDs         string     `json:"event_type_ids,omitempty"`
 	GroupID              int32      `json:"group_id,omitempty"`
 	GroupName            string     `json:"group_name,omitempty"`
 	ID                   uint64     `json:"id,omitempty"`

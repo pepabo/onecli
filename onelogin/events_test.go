@@ -270,7 +270,6 @@ func TestListEvents(t *testing.T) {
 					assert.Equal(t, expected.DirectorySyncRunID, actual.DirectorySyncRunID)
 					assert.Equal(t, expected.ErrorDescription, actual.ErrorDescription)
 					assert.Equal(t, expected.EventTypeID, actual.EventTypeID)
-					assert.Equal(t, expected.EventTypeIDs, actual.EventTypeIDs)
 					assert.Equal(t, expected.GroupID, actual.GroupID)
 					assert.Equal(t, expected.GroupName, actual.GroupName)
 					assert.Equal(t, expected.ID, actual.ID)
@@ -581,7 +580,6 @@ func TestEventStruct(t *testing.T) {
 		DirectorySyncRunID:   202,
 		ErrorDescription:     "Error description",
 		EventTypeID:          1,
-		EventTypeIDs:         "1,2,3",
 		GroupID:              303,
 		GroupName:            "Test Group",
 		ID:                   1,
@@ -622,7 +620,6 @@ func TestEventStruct(t *testing.T) {
 	assert.Equal(t, int32(202), event.DirectorySyncRunID)
 	assert.Equal(t, "Error description", event.ErrorDescription)
 	assert.Equal(t, int32(1), event.EventTypeID)
-	assert.Equal(t, "1,2,3", event.EventTypeIDs)
 	assert.Equal(t, int32(303), event.GroupID)
 	assert.Equal(t, "Test Group", event.GroupName)
 	assert.Equal(t, uint64(1), event.ID)

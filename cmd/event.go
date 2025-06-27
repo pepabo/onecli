@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pepabo/onecli/onelogin"
 	"github.com/pepabo/onecli/utils"
@@ -21,6 +22,7 @@ var (
 	eventQueryCreatedAt   string
 	eventQueryDirectoryID string
 	eventQueryEventTypeID string
+	eventQueryEventType   string
 	eventQueryResolution  string
 	eventQueryID          string
 	eventQuerySince       string
@@ -40,13 +42,14 @@ var eventListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
-		query := getEventQuery()
+		query, err := getEventQuery(client)
+		if err != nil {
+			return err
+		}
 		events, err := client.ListEvents(query)
 		if err != nil {
 			return fmt.Errorf("error getting events: %v", err)
 		}
-
 		if err := utils.PrintOutput(events, utils.OutputFormat(eventOutput), os.Stdout); err != nil {
 			return fmt.Errorf("error printing output: %v", err)
 		}
@@ -78,7 +81,7 @@ var eventTypesCmd = &cobra.Command{
 	},
 }
 
-func getEventQuery() onelogin.EventsQuery {
+func getEventQuery(client *onelogin.Onelogin) (onelogin.EventsQuery, error) {
 	query := onelogin.EventsQuery{}
 
 	if eventQueryClientID != "" {
@@ -93,8 +96,43 @@ func getEventQuery() onelogin.EventsQuery {
 		query.DirectoryID = &eventQueryDirectoryID
 	}
 
+	// --typeと--type-idの排他チェック
+	if eventQueryEventTypeID != "" && eventQueryEventType != "" {
+		return query, fmt.Errorf("--type and --type-id cannot be used together")
+	}
+
 	if eventQueryEventTypeID != "" {
 		query.EventTypeID = &eventQueryEventTypeID
+	} else if eventQueryEventType != "" {
+		eventTypes, err := client.GetEventTypes()
+		if err != nil {
+			return query, fmt.Errorf("error getting event types: %v", err)
+		}
+		nameToID := make(map[string]int32)
+		for _, et := range eventTypes {
+			nameToID[et.Name] = et.ID
+		}
+		typeNames := strings.Split(eventQueryEventType, ",")
+		var typeIDs []string
+		var invalidNames []string
+		for _, name := range typeNames {
+			name = strings.TrimSpace(name)
+			if name == "" {
+				continue
+			}
+			if id, exists := nameToID[name]; exists {
+				typeIDs = append(typeIDs, fmt.Sprintf("%d", id))
+			} else {
+				invalidNames = append(invalidNames, name)
+			}
+		}
+		if len(invalidNames) > 0 {
+			return query, fmt.Errorf("invalid event type name(s): %s. Use 'onecli event types' to see available event types", strings.Join(invalidNames, ", "))
+		}
+		if len(typeIDs) > 0 {
+			eventTypeIDs := strings.Join(typeIDs, ",")
+			query.EventTypeID = &eventTypeIDs
+		}
 	}
 
 	if eventQueryResolution != "" {
@@ -117,7 +155,7 @@ func getEventQuery() onelogin.EventsQuery {
 		query.UserID = &eventQueryUserID
 	}
 
-	return query
+	return query, nil
 }
 
 func init() {
@@ -128,12 +166,16 @@ func init() {
 	eventListCmd.Flags().StringVar(&eventQueryClientID, "client-id", "", "Filter events by client ID")
 	eventListCmd.Flags().StringVar(&eventQueryCreatedAt, "created-at", "", "Filter events by created at")
 	eventListCmd.Flags().StringVar(&eventQueryDirectoryID, "directory-id", "", "Filter events by directory ID")
-	eventListCmd.Flags().StringVar(&eventQueryEventTypeID, "event-type-id", "", "Filter events by event type ID")
+	eventListCmd.Flags().StringVar(&eventQueryEventTypeID, "type-id", "", "Filter events by event type ID (comma-separated for multiple values)")
+	eventListCmd.Flags().StringVar(&eventQueryEventType, "type", "", "Filter events by event type name (comma-separated for multiple values)")
 	eventListCmd.Flags().StringVar(&eventQueryResolution, "resolution", "", "Filter events by resolution")
 	eventListCmd.Flags().StringVar(&eventQueryID, "id", "", "Filter events by ID")
 	eventListCmd.Flags().StringVar(&eventQuerySince, "since", "", "Filter events from date (YYYY-MM-DD)")
 	eventListCmd.Flags().StringVar(&eventQueryUntil, "until", "", "Filter events to date (YYYY-MM-DD)")
 	eventListCmd.Flags().StringVar(&eventQueryUserID, "user-id", "", "Filter events by user ID")
+
+	// Make --type and --type-id mutually exclusive
+	eventListCmd.MarkFlagsMutuallyExclusive("type", "type-id")
 
 	eventTypesCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json)")
 }
