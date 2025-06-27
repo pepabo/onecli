@@ -17,12 +17,16 @@ var eventsCmd = &cobra.Command{
 }
 
 var (
-	eventsQueryEventType string
-	eventsQueryUserID    string
-	eventsQueryAppID     string
-	eventsQueryFrom      string
-	eventsQueryTo        string
-	eventsOutput         string
+	eventsQueryClientID    string
+	eventsQueryCreatedAt   string
+	eventsQueryDirectoryID string
+	eventsQueryEventTypeID string
+	eventsQueryResolution  string
+	eventsQueryID          string
+	eventsQuerySince       string
+	eventsQueryUntil       string
+	eventsQueryUserID      string
+	eventsOutput           string
 )
 
 var eventsListCmd = &cobra.Command{
@@ -53,6 +57,38 @@ var eventsListCmd = &cobra.Command{
 func getEventsQuery() onelogin.EventsQuery {
 	query := onelogin.EventsQuery{}
 
+	if eventsQueryClientID != "" {
+		query.ClientID = &eventsQueryClientID
+	}
+
+	if eventsQueryCreatedAt != "" {
+		query.CreatedAt = &eventsQueryCreatedAt
+	}
+
+	if eventsQueryDirectoryID != "" {
+		query.DirectoryID = &eventsQueryDirectoryID
+	}
+
+	if eventsQueryEventTypeID != "" {
+		query.EventTypeID = &eventsQueryEventTypeID
+	}
+
+	if eventsQueryResolution != "" {
+		query.Resolution = &eventsQueryResolution
+	}
+
+	if eventsQueryID != "" {
+		query.ID = &eventsQueryID
+	}
+
+	if eventsQuerySince != "" {
+		query.Since = &eventsQuerySince
+	}
+
+	if eventsQueryUntil != "" {
+		query.Until = &eventsQueryUntil
+	}
+
 	if eventsQueryUserID != "" {
 		query.UserID = &eventsQueryUserID
 	}
@@ -64,9 +100,13 @@ func init() {
 	eventsCmd.AddCommand(eventsListCmd)
 
 	eventsListCmd.Flags().StringVarP(&eventsOutput, "output", "o", "yaml", "Output format (yaml, json)")
-	eventsListCmd.Flags().StringVar(&eventsQueryEventType, "event-type", "", "Filter events by event type")
+	eventsListCmd.Flags().StringVar(&eventsQueryClientID, "client-id", "", "Filter events by client ID")
+	eventsListCmd.Flags().StringVar(&eventsQueryCreatedAt, "created-at", "", "Filter events by created at")
+	eventsListCmd.Flags().StringVar(&eventsQueryDirectoryID, "directory-id", "", "Filter events by directory ID")
+	eventsListCmd.Flags().StringVar(&eventsQueryEventTypeID, "event-type-id", "", "Filter events by event type ID")
+	eventsListCmd.Flags().StringVar(&eventsQueryResolution, "resolution", "", "Filter events by resolution")
+	eventsListCmd.Flags().StringVar(&eventsQueryID, "id", "", "Filter events by ID")
+	eventsListCmd.Flags().StringVar(&eventsQuerySince, "since", "", "Filter events from date (YYYY-MM-DD)")
+	eventsListCmd.Flags().StringVar(&eventsQueryUntil, "until", "", "Filter events to date (YYYY-MM-DD)")
 	eventsListCmd.Flags().StringVar(&eventsQueryUserID, "user-id", "", "Filter events by user ID")
-	eventsListCmd.Flags().StringVar(&eventsQueryAppID, "app-id", "", "Filter events by app ID")
-	eventsListCmd.Flags().StringVar(&eventsQueryFrom, "from", "", "Filter events from date (YYYY-MM-DD)")
-	eventsListCmd.Flags().StringVar(&eventsQueryTo, "to", "", "Filter events to date (YYYY-MM-DD)")
 }

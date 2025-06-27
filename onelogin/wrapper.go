@@ -1,12 +1,12 @@
 package onelogin
 
 import (
+	"log/slog"
 	"net/http"
 	"os"
-	"log/slog"
 
-	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/api"
 	o "github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin"
+	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/api"
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	utl "github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/utilities"
 )

@@ -14,7 +14,7 @@ func TestEventsQuery_GetKeyValidators(t *testing.T) {
 	validators := query.GetKeyValidators()
 
 	// Test that all expected validators are present
-	expectedKeys := []string{"event_type_id", "user_id", "app_id", "since", "until", "limit", "cursor"}
+	expectedKeys := []string{"event_type_id", "user_id", "since", "until", "limit", "cursor"}
 	for _, key := range expectedKeys {
 		assert.Contains(t, validators, key, "Validator for key %s should be present", key)
 	}
@@ -36,8 +36,8 @@ func TestListEvents(t *testing.T) {
 		{
 			name: "successful events retrieval",
 			query: EventsQuery{
-				EventType: func() *string { v := "1"; return &v }(),
-				UserID:    func() *string { v := "123"; return &v }(),
+				EventTypeID: func() *string { v := "1"; return &v }(),
+				UserID:      func() *string { v := "123"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -97,7 +97,7 @@ func TestListEvents(t *testing.T) {
 		{
 			name: "successful events retrieval with pagination",
 			query: EventsQuery{
-				EventType: func() *string { v := "1"; return &v }(),
+				EventTypeID: func() *string { v := "1"; return &v }(),
 			},
 			mockResponse: []any{
 				// First page
@@ -171,7 +171,7 @@ func TestListEvents(t *testing.T) {
 		{
 			name: "successful events retrieval with empty result",
 			query: EventsQuery{
-				EventType: func() *string { v := "999"; return &v }(),
+				EventTypeID: func() *string { v := "999"; return &v }(),
 			},
 			mockResponse: []any{
 				map[string]any{
@@ -195,7 +195,7 @@ func TestListEvents(t *testing.T) {
 		{
 			name: "error from client",
 			query: EventsQuery{
-				EventType: func() *string { v := "1"; return &v }(),
+				EventTypeID: func() *string { v := "1"; return &v }(),
 			},
 			mockResponse:  []any{},
 			expectedError: assert.AnError,
@@ -312,11 +312,10 @@ func TestListEventsWithComplexQuery(t *testing.T) {
 		{
 			name: "events with all query parameters",
 			query: EventsQuery{
-				EventType: func() *string { v := "1"; return &v }(),
-				UserID:    func() *string { v := "123"; return &v }(),
-				AppID:     func() *string { v := "456"; return &v }(),
-				From:      func() *string { v := "2023-01-01T00:00:00Z"; return &v }(),
-				To:        func() *string { v := "2023-01-31T23:59:59Z"; return &v }(),
+				EventTypeID: func() *string { v := "1"; return &v }(),
+				UserID:      func() *string { v := "123"; return &v }(),
+				Since:       func() *string { v := "2023-01-01T00:00:00Z"; return &v }(),
+				Until:       func() *string { v := "2023-01-31T23:59:59Z"; return &v }(),
 			},
 			mockResponse: map[string]any{
 				"status": map[string]any{

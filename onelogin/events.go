@@ -66,25 +66,33 @@ type EventsResponse struct {
 
 // EventsQuery represents query parameters for events
 type EventsQuery struct {
-	Limit     string  `json:"limit,omitempty"`
-	Cursor    string  `json:"after_cursor,omitempty"`
-	EventType *string `json:"event_type_id,omitempty"`
-	UserID    *string `json:"user_id,omitempty"`
-	AppID     *string `json:"app_id,omitempty"`
-	From      *string `json:"since,omitempty"`
-	To        *string `json:"until,omitempty"`
+	Limit       string  `json:"limit,omitempty"`
+	Cursor      string  `json:"after_cursor,omitempty"`
+	ClientID    *string `json:"client_id,omitempty"`
+	CreatedAt   *string `json:"created_at,omitempty"`
+	DirectoryID *string `json:"directory_id,omitempty"`
+	EventTypeID *string `json:"event_type_id,omitempty"`
+	Resolution  *string `json:"resolution,omitempty"`
+	ID          *string `json:"id,omitempty"`
+	Since       *string `json:"since,omitempty"`
+	Until       *string `json:"until,omitempty"`
+	UserID      *string `json:"user_id,omitempty"`
 }
 
 // GetKeyValidators returns the validators for the query parameters
-func (q EventsQuery) GetKeyValidators() map[string]func(interface{}) bool {
-	return map[string]func(interface{}) bool{
-		"event_type_id": validateString,
-		"user_id":       validateString,
-		"app_id":        validateString,
-		"since":         validateString,
-		"until":         validateString,
+func (q EventsQuery) GetKeyValidators() map[string]func(any) bool {
+	return map[string]func(any) bool{
 		"limit":         validateString,
 		"cursor":        validateString,
+		"client_id":     validateString,
+		"created_at":    validateString,
+		"directory_id":  validateString,
+		"event_type_id": validateString,
+		"resolution":    validateString,
+		"id":            validateString,
+		"since":         validateString,
+		"until":         validateString,
+		"user_id":       validateString,
 	}
 }
 
