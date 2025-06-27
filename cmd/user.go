@@ -142,13 +142,29 @@ var addCmd = &cobra.Command{
 }
 
 func getUserQuery() onelogin.UserQuery {
-	return onelogin.UserQuery{
-		Email:     &userQueryEmail,
-		Username:  &userQueryUsername,
-		Firstname: &userQueryFirstname,
-		Lastname:  &userQueryLastname,
-		UserIDs:   &userQueryUserID,
+	query := onelogin.UserQuery{}
+
+	if userQueryEmail != "" {
+		query.Email = &userQueryEmail
 	}
+
+	if userQueryUsername != "" {
+		query.Username = &userQueryUsername
+	}
+
+	if userQueryFirstname != "" {
+		query.Firstname = &userQueryFirstname
+	}
+
+	if userQueryLastname != "" {
+		query.Lastname = &userQueryLastname
+	}
+
+	if userQueryUserID != "" {
+		query.UserIDs = &userQueryUserID
+	}
+
+	return query
 }
 
 // isQueryParamsEmpty checks if all query parameters are empty
