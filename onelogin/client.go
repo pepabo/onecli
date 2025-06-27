@@ -25,6 +25,7 @@ type Client interface {
 	GetApps(query models.Queryable) (any, error)
 	GetAppUsers(appID int, query models.Queryable) (any, error)
 	ListEvents(query models.Queryable) (any, error)
+	GetEventTypes(query models.Queryable) (any, error)
 }
 
 type Onelogin struct {

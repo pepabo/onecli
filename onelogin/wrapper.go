@@ -59,6 +59,10 @@ func (s *OneloginSDK) ListEvents(query models.Queryable) (any, error) {
 	return s.sdk.ListEvents(query)
 }
 
+func (s *OneloginSDK) GetEventTypes(query models.Queryable) (any, error) {
+	return s.sdk.GetEventTypes(query)
+}
+
 func (s *OneloginSDK) get(path string, query models.Queryable) (any, error) {
 	r, err := s.sdk.Client.Get(&path, query)
 	if err != nil {

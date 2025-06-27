@@ -45,3 +45,9 @@ func (m *MockClient) ListEvents(query models.Queryable) (any, error) {
 	args := m.Called(query)
 	return args.Get(0), args.Error(1)
 }
+
+// GetEventTypes mocks the GetEventTypes method
+func (m *MockClient) GetEventTypes(query models.Queryable) (any, error) {
+	args := m.Called(query)
+	return args.Get(0), args.Error(1)
+}

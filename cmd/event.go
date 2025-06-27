@@ -54,6 +54,30 @@ var eventListCmd = &cobra.Command{
 	},
 }
 
+var eventTypesCmd = &cobra.Command{
+	Use:          "types",
+	Aliases:      []string{"t", "type"},
+	Short:        "List all event types",
+	Long:         `List all event types in your OneLogin organization`,
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		client, err := initClient()
+		if err != nil {
+			return err
+		}
+
+		eventTypes, err := client.GetEventTypes()
+		if err != nil {
+			return fmt.Errorf("error getting event types: %v", err)
+		}
+
+		if err := utils.PrintOutput(eventTypes, utils.OutputFormat(eventOutput), os.Stdout); err != nil {
+			return fmt.Errorf("error printing output: %v", err)
+		}
+		return nil
+	},
+}
+
 func getEventQuery() onelogin.EventsQuery {
 	query := onelogin.EventsQuery{}
 
@@ -98,6 +122,7 @@ func getEventQuery() onelogin.EventsQuery {
 
 func init() {
 	eventCmd.AddCommand(eventListCmd)
+	eventCmd.AddCommand(eventTypesCmd)
 
 	eventListCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json)")
 	eventListCmd.Flags().StringVar(&eventQueryClientID, "client-id", "", "Filter events by client ID")
@@ -109,4 +134,6 @@ func init() {
 	eventListCmd.Flags().StringVar(&eventQuerySince, "since", "", "Filter events from date (YYYY-MM-DD)")
 	eventListCmd.Flags().StringVar(&eventQueryUntil, "until", "", "Filter events to date (YYYY-MM-DD)")
 	eventListCmd.Flags().StringVar(&eventQueryUserID, "user-id", "", "Filter events by user ID")
+
+	eventTypesCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json)")
 }
