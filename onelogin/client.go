@@ -1,11 +1,12 @@
 package onelogin
 
 import (
+	"sync"
+
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 )
 
 const (
-	// DefaultPageSize は1ページあたりのデフォルトの取得件数です
 	DefaultPageSize = 1000
 )
 
@@ -25,10 +26,16 @@ type Client interface {
 	CreateUser(user models.User) (any, error)
 	GetApps(query models.Queryable) (any, error)
 	GetAppUsers(appID int, query models.Queryable) (any, error)
+	ListEvents(query models.Queryable) (any, error)
+	GetEventTypes(query models.Queryable) (any, error)
 }
 
 type Onelogin struct {
 	client Client
+
+	eventTypesCache     []EventType
+	eventTypesCacheErr  error
+	eventTypesCacheOnce sync.Once
 }
 
 // New creates a new Onelogin client

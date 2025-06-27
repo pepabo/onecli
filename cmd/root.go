@@ -16,7 +16,6 @@ var rootCmd = &cobra.Command{
 	Short: "OneLogin CLI tool",
 	Long:  `A CLI tool for interacting with OneLogin API`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// ログ出力の制御
 		if !verbose {
 			log.SetOutput(io.Discard)
 		}
@@ -39,6 +38,7 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(userCmd)
 	rootCmd.AddCommand(appCmd)
+	rootCmd.AddCommand(eventCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
 }

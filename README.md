@@ -1,6 +1,6 @@
 # onecli
 
-CLI tool for OneLogin
+A CLI tool for interacting with OneLogin API
 
 ## Description
 
@@ -41,13 +41,74 @@ Download the latest release from the [releases page](https://github.com/pepabo/o
 
 ## Usage
 
-```bash
-# Check version
-onecli --version
+### User Management
 
-# Run commands
-onecli [command] [options]
+```bash
+# List all users
+onecli user list
+
+# List users with filters
+onecli user list --email user@example.com
+onecli user list --username username
+onecli user list --firstname John
+onecli user list --lastname Doe
+onecli user list --user-id 123
+
+# Add a new user
+onecli user add "John" "Doe" "john.doe@example.com"
+
+# Modify user email
+onecli user modify email "newemail@example.com" --email "oldemail@example.com"
 ```
+
+### App Management
+
+```bash
+# List all apps
+onecli app list
+
+# List apps with user details
+onecli app list --details
+```
+
+### Event Management
+
+```bash
+# List all events
+onecli event list
+
+# List events with filters
+onecli event list --event-type-id 1
+onecli event list --user-id 123
+onecli event list --since 2023-01-01
+onecli event list --until 2023-12-31
+
+# List all event types
+onecli event types
+
+# List event types in JSON format
+onecli event types --output json
+```
+
+## Output Formats
+
+All list commands support multiple output formats:
+
+- `yaml` (default)
+- `json`
+
+Example:
+```bash
+onecli user list --output json
+```
+
+## Configuration
+
+Set the following environment variables:
+
+- `ONELOGIN_CLIENT_ID`: Your OneLogin client ID
+- `ONELOGIN_CLIENT_SECRET`: Your OneLogin client secret
+- `ONELOGIN_SUBDOMAIN`: Your OneLogin subdomain
 
 ## Development
 
@@ -59,6 +120,16 @@ onecli [command] [options]
 
 ```bash
 go build
+```
+
+### Running Tests
+
+```bash
+# Run tests
+go test ./...
+
+# Run specific tests
+go test ./onelogin -v -run TestGetEventTypes
 ```
 
 ## License
