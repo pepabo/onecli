@@ -23,6 +23,7 @@ type Event struct {
 	DirectorySyncRunID   int32      `json:"directory_sync_run_id,omitempty"`
 	ErrorDescription     string     `json:"error_description,omitempty"`
 	EventTypeID          int32      `json:"event_type_id,omitempty"`
+	EventType            string     `json:"event_type,omitempty"`
 	GroupID              int32      `json:"group_id,omitempty"`
 	GroupName            string     `json:"group_name,omitempty"`
 	ID                   uint64     `json:"id,omitempty"`
@@ -101,6 +102,15 @@ func (o *Onelogin) ListEvents(query EventsQuery) ([]Event, error) {
 	nextCursor := ""
 	events := []Event{}
 
+	// Get event types mapping for efficient lookup
+	eventTypes, err := o.GetEventTypes()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a map for quick lookup of event type names by ID
+	eventTypeMap := EventTypeIDNameMap(eventTypes)
+
 	for {
 		if nextCursor != "" {
 			query.Cursor = nextCursor
@@ -115,6 +125,13 @@ func (o *Onelogin) ListEvents(query EventsQuery) ([]Event, error) {
 		response, err := convertToEventsResponse(result.(map[string]any))
 		if err != nil {
 			return nil, err
+		}
+
+		// Set event type names for each event
+		for i := range response.Data {
+			if eventTypeName, exists := eventTypeMap[response.Data[i].EventTypeID]; exists {
+				response.Data[i].EventType = eventTypeName
+			}
 		}
 
 		events = append(events, response.Data...)

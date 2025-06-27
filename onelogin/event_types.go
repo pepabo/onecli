@@ -21,20 +21,25 @@ type EventTypesResponse struct {
 	Data []EventType `json:"data"`
 }
 
-// GetEventTypes retrieves event types from OneLogin
+// GetEventTypes retrieves event types from OneLogin (with caching)
 func (o *Onelogin) GetEventTypes() ([]EventType, error) {
-	result, err := o.client.GetEventTypes(nil)
-	if err != nil {
-		return nil, err
-	}
+	o.eventTypesCacheOnce.Do(func() {
+		result, err := o.client.GetEventTypes(nil)
+		if err != nil {
+			o.eventTypesCacheErr = err
+			return
+		}
 
-	// Convert the result to EventTypesResponse
-	response, err := convertToEventTypesResponse(result.(map[string]any))
-	if err != nil {
-		return nil, err
-	}
+		// Convert the result to EventTypesResponse
+		response, err := convertToEventTypesResponse(result.(map[string]any))
+		if err != nil {
+			o.eventTypesCacheErr = err
+			return
+		}
 
-	return response.Data, nil
+		o.eventTypesCache = response.Data
+	})
+	return o.eventTypesCache, o.eventTypesCacheErr
 }
 
 func convertToEventTypesResponse(data map[string]any) (*EventTypesResponse, error) {
@@ -50,4 +55,22 @@ func convertToEventTypesResponse(data map[string]any) (*EventTypesResponse, erro
 	}
 
 	return &response, nil
+}
+
+// EventTypeIDNameMap returns a map[id]name
+func EventTypeIDNameMap(eventTypes []EventType) map[int32]string {
+	m := make(map[int32]string)
+	for _, et := range eventTypes {
+		m[et.ID] = et.Name
+	}
+	return m
+}
+
+// EventTypeNameIDMap returns a map[name]id
+func EventTypeNameIDMap(eventTypes []EventType) map[string]int32 {
+	m := make(map[string]int32)
+	for _, et := range eventTypes {
+		m[et.Name] = et.ID
+	}
+	return m
 }

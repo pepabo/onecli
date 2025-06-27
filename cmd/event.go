@@ -108,10 +108,7 @@ func getEventQuery(client *onelogin.Onelogin) (onelogin.EventsQuery, error) {
 		if err != nil {
 			return query, fmt.Errorf("error getting event types: %v", err)
 		}
-		nameToID := make(map[string]int32)
-		for _, et := range eventTypes {
-			nameToID[et.Name] = et.ID
-		}
+		nameToID := onelogin.EventTypeNameIDMap(eventTypes)
 		typeNames := strings.Split(eventQueryEventType, ",")
 		var typeIDs []string
 		var invalidNames []string

@@ -80,6 +80,7 @@ func TestListEvents(t *testing.T) {
 					ID:          1,
 					AccountID:   12345,
 					EventTypeID: 1,
+					EventType:   "User Login",
 					UserID:      123,
 					UserName:    "testuser",
 					IPAddr:      "192.168.1.1",
@@ -88,6 +89,7 @@ func TestListEvents(t *testing.T) {
 					ID:          2,
 					AccountID:   12345,
 					EventTypeID: 2,
+					EventType:   "User Logout",
 					UserID:      456,
 					UserName:    "testuser2",
 					IPAddr:      "192.168.1.2",
@@ -156,6 +158,7 @@ func TestListEvents(t *testing.T) {
 					ID:          1,
 					AccountID:   12345,
 					EventTypeID: 1,
+					EventType:   "User Login",
 					UserID:      123,
 					UserName:    "testuser",
 				},
@@ -163,6 +166,7 @@ func TestListEvents(t *testing.T) {
 					ID:          2,
 					AccountID:   12345,
 					EventTypeID: 1,
+					EventType:   "User Login",
 					UserID:      456,
 					UserName:    "testuser2",
 				},
@@ -211,11 +215,57 @@ func TestListEvents(t *testing.T) {
 
 			// Set up mock expectations
 			if tt.expectedError != nil {
+				// Mock GetEventTypes for event type name lookup (this will be called before the error)
+				mockEventTypesResponse := map[string]any{
+					"status": map[string]any{
+						"error":   false,
+						"code":    float64(200),
+						"message": "Success",
+						"type":    "success",
+					},
+					"data": []any{
+						map[string]any{
+							"id":          float64(1),
+							"name":        "User Login",
+							"description": "User login event",
+						},
+						map[string]any{
+							"id":          float64(2),
+							"name":        "User Logout",
+							"description": "User logout event",
+						},
+					},
+				}
+				mockClient.On("GetEventTypes", nil).Return(mockEventTypesResponse, nil)
+
 				// Create expected query with Limit set to DefaultPageSize
 				expectedQuery := tt.query
 				expectedQuery.Limit = strconv.Itoa(DefaultPageSize)
 				mockClient.On("ListEvents", &expectedQuery).Return(nil, tt.expectedError)
 			} else {
+				// Mock GetEventTypes for event type name lookup
+				mockEventTypesResponse := map[string]any{
+					"status": map[string]any{
+						"error":   false,
+						"code":    float64(200),
+						"message": "Success",
+						"type":    "success",
+					},
+					"data": []any{
+						map[string]any{
+							"id":          float64(1),
+							"name":        "User Login",
+							"description": "User login event",
+						},
+						map[string]any{
+							"id":          float64(2),
+							"name":        "User Logout",
+							"description": "User logout event",
+						},
+					},
+				}
+				mockClient.On("GetEventTypes", nil).Return(mockEventTypesResponse, nil)
+
 				// Set up pagination expectations
 				for i, response := range tt.mockResponse {
 					if i == 0 {
@@ -270,6 +320,7 @@ func TestListEvents(t *testing.T) {
 					assert.Equal(t, expected.DirectorySyncRunID, actual.DirectorySyncRunID)
 					assert.Equal(t, expected.ErrorDescription, actual.ErrorDescription)
 					assert.Equal(t, expected.EventTypeID, actual.EventTypeID)
+					assert.Equal(t, expected.EventType, actual.EventType)
 					assert.Equal(t, expected.GroupID, actual.GroupID)
 					assert.Equal(t, expected.GroupName, actual.GroupName)
 					assert.Equal(t, expected.ID, actual.ID)
@@ -349,6 +400,7 @@ func TestListEventsWithComplexQuery(t *testing.T) {
 					ID:          1,
 					AccountID:   12345,
 					EventTypeID: 1,
+					EventType:   "User Login",
 					UserID:      123,
 					AppID:       456,
 					UserName:    "testuser",
@@ -369,11 +421,52 @@ func TestListEventsWithComplexQuery(t *testing.T) {
 
 			// Set up mock expectations
 			if tt.expectedError != nil {
+				// Mock GetEventTypes for event type name lookup (this will be called before the error)
+				mockEventTypesResponse := map[string]any{
+					"status": map[string]any{
+						"error":   false,
+						"code":    float64(200),
+						"message": "Success",
+						"type":    "success",
+					},
+					"data": []any{
+						map[string]any{
+							"id":          float64(1),
+							"name":        "User Login",
+							"description": "User login event",
+						},
+					},
+				}
+				mockClient.On("GetEventTypes", nil).Return(mockEventTypesResponse, nil)
+
 				// Create expected query with Limit set to DefaultPageSize
 				expectedQuery := tt.query
 				expectedQuery.Limit = strconv.Itoa(DefaultPageSize)
 				mockClient.On("ListEvents", &expectedQuery).Return(nil, tt.expectedError)
 			} else {
+				// Mock GetEventTypes for event type name lookup
+				mockEventTypesResponse := map[string]any{
+					"status": map[string]any{
+						"error":   false,
+						"code":    float64(200),
+						"message": "Success",
+						"type":    "success",
+					},
+					"data": []any{
+						map[string]any{
+							"id":          float64(1),
+							"name":        "User Login",
+							"description": "User login event",
+						},
+						map[string]any{
+							"id":          float64(2),
+							"name":        "User Logout",
+							"description": "User logout event",
+						},
+					},
+				}
+				mockClient.On("GetEventTypes", nil).Return(mockEventTypesResponse, nil)
+
 				// Create expected query with Limit set to DefaultPageSize
 				expectedQuery := tt.query
 				expectedQuery.Limit = strconv.Itoa(DefaultPageSize)
@@ -397,6 +490,7 @@ func TestListEventsWithComplexQuery(t *testing.T) {
 					assert.Equal(t, expected.AppID, actual.AppID)
 					assert.Equal(t, expected.AppName, actual.AppName)
 					assert.Equal(t, expected.EventTypeID, actual.EventTypeID)
+					assert.Equal(t, expected.EventType, actual.EventType)
 					assert.Equal(t, expected.UserID, actual.UserID)
 					assert.Equal(t, expected.UserName, actual.UserName)
 					assert.Equal(t, expected.RiskScore, actual.RiskScore)
@@ -472,6 +566,7 @@ func TestConvertToEventsResponse(t *testing.T) {
 						ID:          1,
 						AccountID:   12345,
 						EventTypeID: 1,
+						EventType:   "",
 						UserID:      123,
 						UserName:    "testuser",
 						IPAddr:      "192.168.1.1",
@@ -551,6 +646,7 @@ func TestConvertToEventsResponse(t *testing.T) {
 					assert.Equal(t, expected.AppID, actual.AppID)
 					assert.Equal(t, expected.AppName, actual.AppName)
 					assert.Equal(t, expected.EventTypeID, actual.EventTypeID)
+					assert.Equal(t, expected.EventType, actual.EventType)
 					assert.Equal(t, expected.UserID, actual.UserID)
 					assert.Equal(t, expected.UserName, actual.UserName)
 					assert.Equal(t, expected.RiskScore, actual.RiskScore)
@@ -580,6 +676,7 @@ func TestEventStruct(t *testing.T) {
 		DirectorySyncRunID:   202,
 		ErrorDescription:     "Error description",
 		EventTypeID:          1,
+		EventType:            "User Login",
 		GroupID:              303,
 		GroupName:            "Test Group",
 		ID:                   1,
@@ -620,6 +717,7 @@ func TestEventStruct(t *testing.T) {
 	assert.Equal(t, int32(202), event.DirectorySyncRunID)
 	assert.Equal(t, "Error description", event.ErrorDescription)
 	assert.Equal(t, int32(1), event.EventTypeID)
+	assert.Equal(t, "User Login", event.EventType)
 	assert.Equal(t, int32(303), event.GroupID)
 	assert.Equal(t, "Test Group", event.GroupName)
 	assert.Equal(t, uint64(1), event.ID)

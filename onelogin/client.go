@@ -1,6 +1,8 @@
 package onelogin
 
 import (
+	"sync"
+
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 )
 
@@ -30,6 +32,10 @@ type Client interface {
 
 type Onelogin struct {
 	client Client
+
+	eventTypesCache     []EventType
+	eventTypesCacheErr  error
+	eventTypesCacheOnce sync.Once
 }
 
 // New creates a new Onelogin client
