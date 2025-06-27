@@ -5,7 +5,6 @@ import (
 )
 
 const (
-	// DefaultPageSize は1ページあたりのデフォルトの取得件数です
 	DefaultPageSize = 1000
 )
 
@@ -25,6 +24,7 @@ type Client interface {
 	CreateUser(user models.User) (any, error)
 	GetApps(query models.Queryable) (any, error)
 	GetAppUsers(appID int, query models.Queryable) (any, error)
+	ListEvents(query models.Queryable) (any, error)
 }
 
 type Onelogin struct {

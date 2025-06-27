@@ -1,6 +1,11 @@
 package onelogin
 
 import (
+	"net/http"
+	"os"
+	"log/slog"
+
+	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/api"
 	o "github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin"
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	utl "github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/utilities"
@@ -15,6 +20,11 @@ func NewOneloginSDKWrapper() (*OneloginSDK, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if os.Getenv("ONECLI_DEBUG") != "" {
+		sdk.Client.HttpClient = NewHTTPDebuggerClient(sdk.Client.HttpClient)
+	}
+
 	return &OneloginSDK{sdk: sdk}, nil
 }
 
@@ -45,6 +55,10 @@ func (s *OneloginSDK) GetAppUsers(appID int, query models.Queryable) (any, error
 	return s.get(p, query)
 }
 
+func (s *OneloginSDK) ListEvents(query models.Queryable) (any, error) {
+	return s.sdk.ListEvents(query)
+}
+
 func (s *OneloginSDK) get(path string, query models.Queryable) (any, error) {
 	r, err := s.sdk.Client.Get(&path, query)
 	if err != nil {
@@ -52,4 +66,23 @@ func (s *OneloginSDK) get(path string, query models.Queryable) (any, error) {
 	}
 
 	return utl.CheckHTTPResponse(r)
+}
+
+type HTTPDebuggerClient struct {
+	client api.HTTPClient
+	logger *slog.Logger
+}
+
+func NewHTTPDebuggerClient(client api.HTTPClient) *HTTPDebuggerClient {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	return &HTTPDebuggerClient{client: client, logger: logger}
+}
+
+func (c *HTTPDebuggerClient) Do(req *http.Request) (*http.Response, error) {
+	method := req.Method
+	url := req.URL.String()
+
+	c.logger.Debug("Request", "method", method, "url", url)
+
+	return c.client.Do(req)
 }
