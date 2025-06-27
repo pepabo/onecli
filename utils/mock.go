@@ -39,3 +39,9 @@ func (m *MockClient) GetAppUsers(appID int, query models.Queryable) (any, error)
 	args := m.Called(appID, query)
 	return args.Get(0), args.Error(1)
 }
+
+// ListEvents mocks the ListEvents method
+func (m *MockClient) ListEvents(query models.Queryable) (any, error) {
+	args := m.Called(query)
+	return args.Get(0), args.Error(1)
+}
