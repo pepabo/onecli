@@ -187,11 +187,12 @@ func TestPrintOutput(t *testing.T) {
 			assert.NoError(t, err)
 			output := buf.String()
 
-			if tt.format == OutputFormatJSON {
+			switch tt.format {
+			case OutputFormatJSON:
 				assert.JSONEq(t, tt.expected.(string), output)
-			} else if tt.format == OutputFormatCSV {
+			case OutputFormatCSV:
 				assert.Equal(t, tt.expected.(string), output)
-			} else {
+			default:
 				expectedBytes, err := yaml.Marshal(tt.expected)
 				assert.NoError(t, err)
 				assert.YAMLEq(t, string(expectedBytes), output)
