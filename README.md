@@ -96,10 +96,12 @@ All list commands support multiple output formats:
 
 - `yaml` (default)
 - `json`
+- `csv`
 
 Example:
 ```bash
 onecli user list --output json
+onecli user list --output csv
 ```
 
 ## Configuration

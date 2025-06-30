@@ -159,7 +159,7 @@ func init() {
 	eventCmd.AddCommand(eventListCmd)
 	eventCmd.AddCommand(eventTypesCmd)
 
-	eventListCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json)")
+	eventListCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json, csv)")
 	eventListCmd.Flags().StringVar(&eventQueryClientID, "client-id", "", "Filter events by client ID")
 	eventListCmd.Flags().StringVar(&eventQueryCreatedAt, "created-at", "", "Filter events by created at")
 	eventListCmd.Flags().StringVar(&eventQueryDirectoryID, "directory-id", "", "Filter events by directory ID")
@@ -174,5 +174,5 @@ func init() {
 	// Make --type and --type-id mutually exclusive
 	eventListCmd.MarkFlagsMutuallyExclusive("type", "type-id")
 
-	eventTypesCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json)")
+	eventTypesCmd.Flags().StringVarP(&eventOutput, "output", "o", "yaml", "Output format (yaml, json, csv)")
 }

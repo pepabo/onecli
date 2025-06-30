@@ -178,7 +178,7 @@ func init() {
 	modifyCmd.AddCommand(modifyEmailCmd)
 	userCmd.AddCommand(addCmd)
 
-	listCmd.Flags().StringVarP(&output, "output", "o", "yaml", "Output format (yaml, json)")
+	listCmd.Flags().StringVarP(&output, "output", "o", "yaml", "Output format (yaml, json, csv)")
 	listCmd.Flags().StringVar(&userQueryEmail, "email", "", "Filter users by email")
 	listCmd.Flags().StringVar(&userQueryUsername, "username", "", "Filter users by username")
 	listCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Filter users by first name")
