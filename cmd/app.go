@@ -95,9 +95,9 @@ func init() {
 	appCmd.AddCommand(appListCmd)
 	appCmd.AddCommand(appListUsersCmd)
 
-	appListCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")
+	appListCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json, csv)")
 	appListCmd.Flags().StringVar(&appQueryName, "name", "", "Filter apps by name")
 	appListCmd.Flags().BoolVar(&appDetail, "detail", false, "Include user details for each app")
 
-	appListUsersCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json)")
+	appListUsersCmd.Flags().StringVarP(&appOutput, "output", "o", "yaml", "Output format (yaml, json, csv)")
 }

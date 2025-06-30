@@ -106,6 +106,73 @@ func TestPrintOutput(t *testing.T) {
 			expected: "",
 			wantErr:  true,
 		},
+		{
+			name:   "正常系: CSV形式で出力",
+			format: OutputFormatCSV,
+			data: []models.User{
+				{
+					ID:          1,
+					Username:    "testuser1",
+					Email:       "test1@example.com",
+					Firstname:   "Test",
+					Lastname:    "User1",
+					CreatedAt:   time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					UpdatedAt:   time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					ActivatedAt: time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					State:       1,
+					Status:      1,
+				},
+				{
+					ID:          2,
+					Username:    "testuser2",
+					Email:       "test2@example.com",
+					Firstname:   "Test",
+					Lastname:    "User2",
+					CreatedAt:   time.Date(2024, 4, 2, 12, 0, 0, 0, time.UTC),
+					UpdatedAt:   time.Date(2024, 4, 2, 12, 0, 0, 0, time.UTC),
+					ActivatedAt: time.Date(2024, 4, 2, 12, 0, 0, 0, time.UTC),
+					State:       1,
+					Status:      1,
+				},
+			},
+			expected: "Firstname,Lastname,Username,Email,DistinguishedName,Samaccountname,UserPrincipalName,MemberOf,Phone,Password,PasswordConfirmation,PasswordAlgorithm,Salt,Title,Company,Department,ManagerADID,Comment,CreatedAt,UpdatedAt,ActivatedAt,LastLogin,PasswordChangedAt,LockedUntil,InvitationSentAt,State,Status,InvalidLoginAttempts,GroupID,RoleIDs,DirectoryID,TrustedIDPID,ManagerUserID,ExternalID,ID,CustomAttributes\nTest,User1,testuser1,test1@example.com,,,,[],,,,,,,,,0,,2024-04-01T12:00:00Z,2024-04-01T12:00:00Z,2024-04-01T12:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,1,1,0,0,[],0,0,0,,1,map[]\nTest,User2,testuser2,test2@example.com,,,,[],,,,,,,,,0,,2024-04-02T12:00:00Z,2024-04-02T12:00:00Z,2024-04-02T12:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,1,1,0,0,[],0,0,0,,2,map[]\n",
+			wantErr:  false,
+		},
+		{
+			name:     "異常系: CSV形式でスライス以外のデータ",
+			format:   OutputFormatCSV,
+			data:     "not a slice",
+			expected: "",
+			wantErr:  true,
+		},
+		{
+			name:     "異常系: CSV形式で空のスライス",
+			format:   OutputFormatCSV,
+			data:     []models.User{},
+			expected: "",
+			wantErr:  false,
+		},
+		{
+			name:   "正常系: CSV形式で改行を含む文字列",
+			format: OutputFormatCSV,
+			data: []models.User{
+				{
+					ID:          1,
+					Username:    "testuser1",
+					Email:       "test1@example.com",
+					Firstname:   "Test",
+					Lastname:    "User1",
+					Comment:     "This is a comment\nwith multiple lines\nand special chars, like comma",
+					CreatedAt:   time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					UpdatedAt:   time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					ActivatedAt: time.Date(2024, 4, 1, 12, 0, 0, 0, time.UTC),
+					State:       1,
+					Status:      1,
+				},
+			},
+			expected: "Firstname,Lastname,Username,Email,DistinguishedName,Samaccountname,UserPrincipalName,MemberOf,Phone,Password,PasswordConfirmation,PasswordAlgorithm,Salt,Title,Company,Department,ManagerADID,Comment,CreatedAt,UpdatedAt,ActivatedAt,LastLogin,PasswordChangedAt,LockedUntil,InvitationSentAt,State,Status,InvalidLoginAttempts,GroupID,RoleIDs,DirectoryID,TrustedIDPID,ManagerUserID,ExternalID,ID,CustomAttributes\nTest,User1,testuser1,test1@example.com,,,,[],,,,,,,,,0,\"This is a comment\nwith multiple lines\nand special chars, like comma\",2024-04-01T12:00:00Z,2024-04-01T12:00:00Z,2024-04-01T12:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,0001-01-01T00:00:00Z,1,1,0,0,[],0,0,0,,1,map[]\n",
+			wantErr:  false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -122,6 +189,8 @@ func TestPrintOutput(t *testing.T) {
 
 			if tt.format == OutputFormatJSON {
 				assert.JSONEq(t, tt.expected.(string), output)
+			} else if tt.format == OutputFormatCSV {
+				assert.Equal(t, tt.expected.(string), output)
 			} else {
 				expectedBytes, err := yaml.Marshal(tt.expected)
 				assert.NoError(t, err)
