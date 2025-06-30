@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.4.0](https://github.com/pepabo/onecli/compare/v0.3.2...v0.4.0) - 2025-06-30
+- fix: trigger release workflow only via workflow_dispatch by @buty4649 in https://github.com/pepabo/onecli/pull/21
+- feat: add event_type field to event list output and optimize event type mapping by @buty4649 in https://github.com/pepabo/onecli/pull/23
+- Add comprehensive CSV output support by @buty4649 in https://github.com/pepabo/onecli/pull/24
+
 ## [v0.3.2](https://github.com/pepabo/onecli/compare/v0.3.1...v0.3.2) - 2025-06-18
 - feat: Add pagination support to GetAppUsers and refactor related code by @buty4649 in https://github.com/pepabo/onecli/pull/19
 
