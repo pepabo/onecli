@@ -3,7 +3,7 @@ module github.com/pepabo/onecli
 go 1.24
 
 require (
-	github.com/goccy/go-yaml v1.19.0
+	github.com/goccy/go-yaml v1.19.1
 	github.com/onelogin/onelogin-go-sdk/v4 v4.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
