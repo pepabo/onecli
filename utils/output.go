@@ -118,7 +118,7 @@ func formatFieldValue(field reflect.Value) string {
 		return strconv.FormatBool(field.Bool())
 	case reflect.Struct:
 		// time.Timeの場合はRFC3339形式で出力
-		if field.Type() == reflect.TypeOf(time.Time{}) {
+		if field.Type() == reflect.TypeFor[time.Time]() {
 			t := field.Interface().(time.Time)
 			return t.Format(time.RFC3339)
 		}
