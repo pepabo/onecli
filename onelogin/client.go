@@ -13,6 +13,7 @@ const (
 type (
 	User      = models.User
 	UserQuery = models.UserQuery
+	Invite    = models.Invite
 )
 
 type (
@@ -24,6 +25,8 @@ type Client interface {
 	GetUsers(query models.Queryable) (any, error)
 	UpdateUser(userID int, user models.User) (any, error)
 	CreateUser(user models.User) (any, error)
+	UpdatePasswordInsecure(userID int, requestBody any) (any, error)
+	SendInviteLink(invite models.Invite) (any, error)
 	GetApps(query models.Queryable) (any, error)
 	GetAppUsers(appID int, query models.Queryable) (any, error)
 	ListEvents(query models.Queryable) (any, error)

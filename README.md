@@ -57,8 +57,28 @@ onecli user list --user-id 123
 # Add a new user
 onecli user add "John" "Doe" "john.doe@example.com"
 
+# Set a password for an existing user
+onecli user set-password --email user@example.com --password "$PASSWORD"
+
+# Set a user's status (1=Active, 2=Suspended, 4=PasswordExpired, 5=AwaitingPasswordReset)
+onecli user set-status --email user@example.com --status 4
+
+# Send a password setup/reset invite link via email
+onecli user send-invite --email user@example.com
+onecli user send-invite --email user@example.com --personal-email personal@example.com
+
 # Modify user email
 onecli user modify email "newemail@example.com" --email "oldemail@example.com"
+```
+
+These single-purpose commands can be chained to create and invite a user in one go.
+Setting status `4` (PasswordExpired) forces a password change on first login:
+
+```bash
+onecli user add "John" "Doe" "john.doe@example.com" && \
+onecli user set-password --email john.doe@example.com --password "$PASSWORD" && \
+onecli user set-status --email john.doe@example.com --status 4 && \
+onecli user send-invite --email john.doe@example.com
 ```
 
 ### App Management

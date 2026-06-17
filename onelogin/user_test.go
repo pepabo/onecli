@@ -1,13 +1,11 @@
 package onelogin
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/onelogin/onelogin-go-sdk/v4/pkg/onelogin/models"
 	"github.com/pepabo/onecli/utils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
 func TestGetUsers(t *testing.T) {
@@ -136,13 +134,63 @@ func TestGetUsers(t *testing.T) {
 	}
 }
 
+func TestSendInviteLink(t *testing.T) {
+	tests := []struct {
+		name          string
+		email         string
+		personalEmail string
+		mockError     error
+		expectedError error
+	}{
+		{
+			name:  "successful invite to primary email",
+			email: "user@example.com",
+		},
+		{
+			name:          "successful invite with personal email",
+			email:         "user@example.com",
+			personalEmail: "user@gmail.com",
+		},
+		{
+			name:          "error from client",
+			email:         "user@example.com",
+			mockError:     assert.AnError,
+			expectedError: assert.AnError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(utils.MockClient)
+			o := &Onelogin{client: mockClient}
+
+			expectedInvite := models.Invite{
+				Email:         tt.email,
+				PersonalEmail: tt.personalEmail,
+			}
+			mockClient.On("SendInviteLink", expectedInvite).Return(nil, tt.mockError)
+
+			err := o.SendInviteLink(tt.email, tt.personalEmail)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
 func TestCreateUser(t *testing.T) {
 	tests := []struct {
 		name          string
 		inputUser     models.User
 		mockResponse  any
 		mockError     error
-		expectedUser  models.User
+		expectedID    int
 		expectedError error
 	}{
 		{
@@ -153,20 +201,14 @@ func TestCreateUser(t *testing.T) {
 				Firstname: "New",
 				Lastname:  "User",
 			},
-			mockResponse: models.User{
-				ID:        3,
-				Email:     "newuser@example.com",
-				Username:  "newuser",
-				Firstname: "New",
-				Lastname:  "User",
+			mockResponse: map[string]any{
+				"id":        float64(3),
+				"email":     "newuser@example.com",
+				"username":  "newuser",
+				"firstname": "New",
+				"lastname":  "User",
 			},
-			expectedUser: models.User{
-				ID:        3,
-				Email:     "newuser@example.com",
-				Username:  "newuser",
-				Firstname: "New",
-				Lastname:  "User",
-			},
+			expectedID: 3,
 		},
 		{
 			name: "error creating user",
@@ -177,7 +219,7 @@ func TestCreateUser(t *testing.T) {
 				Lastname:  "User",
 			},
 			mockError:     assert.AnError,
-			expectedError: fmt.Errorf("error creating user: %v", assert.AnError),
+			expectedError: assert.AnError,
 		},
 	}
 
@@ -190,12 +232,51 @@ func TestCreateUser(t *testing.T) {
 
 			mockClient.On("CreateUser", tt.inputUser).Return(tt.mockResponse, tt.mockError)
 
-			// Add expectation for UpdateUser call in SetUserState
-			if tt.expectedError == nil {
-				mockClient.On("UpdateUser", 3, mock.AnythingOfType("models.User")).Return(nil, nil)
+			id, err := o.CreateUser(tt.inputUser)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedID, id)
 			}
 
-			err := o.CreateUser(tt.inputUser)
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	tests := []struct {
+		name          string
+		userID        int
+		user          User
+		mockError     error
+		expectedError error
+	}{
+		{
+			name:   "successful update",
+			userID: 1,
+			user:   User{Email: "updated@example.com"},
+		},
+		{
+			name:          "error from client",
+			userID:        1,
+			user:          User{Email: "updated@example.com"},
+			mockError:     assert.AnError,
+			expectedError: assert.AnError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(utils.MockClient)
+			o := &Onelogin{client: mockClient}
+
+			mockClient.On("UpdateUser", tt.userID, tt.user).Return(nil, tt.mockError)
+
+			err := o.UpdateUser(tt.userID, tt.user)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
@@ -203,7 +284,52 @@ func TestCreateUser(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
+			mockClient.AssertExpectations(t)
+		})
+	}
+}
 
+func TestSetPassword(t *testing.T) {
+	tests := []struct {
+		name          string
+		userID        int
+		password      string
+		mockError     error
+		expectedError error
+	}{
+		{
+			name:     "successful password set",
+			userID:   1,
+			password: "newpass123",
+		},
+		{
+			name:          "error from client",
+			userID:        1,
+			password:      "newpass123",
+			mockError:     assert.AnError,
+			expectedError: assert.AnError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockClient := new(utils.MockClient)
+			o := &Onelogin{client: mockClient}
+
+			expectedBody := map[string]string{
+				"password":              tt.password,
+				"password_confirmation": tt.password,
+			}
+			mockClient.On("UpdatePasswordInsecure", tt.userID, expectedBody).Return(nil, tt.mockError)
+
+			err := o.SetPassword(tt.userID, tt.password)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+			}
 			mockClient.AssertExpectations(t)
 		})
 	}

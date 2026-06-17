@@ -3,7 +3,6 @@ package onelogin
 import (
 	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/pepabo/onecli/utils"
 )
@@ -23,36 +22,42 @@ func (o *Onelogin) GetUsers(query UserQuery) ([]User, error) {
 // UpdateUser updates a user in Onelogin
 func (o *Onelogin) UpdateUser(userID int, user User) error {
 	_, err := o.client.UpdateUser(userID, user)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-// SetUserState sets the user state to active and updates the last login time
-func (o *Onelogin) SetUserState(userID int) error {
-	user := User{
-		Status:    1,
-		LastLogin: time.Now(),
-	}
-	err := o.UpdateUser(userID, user)
-	if err != nil {
-		return fmt.Errorf("error setting user state: %v", err)
-	}
-
-	return nil
-}
-
-// CreateUser creates a new user in Onelogin
-func (o *Onelogin) CreateUser(user User) error {
+// CreateUser creates a new user in Onelogin and returns the created user's ID
+func (o *Onelogin) CreateUser(user User) (int, error) {
 	result, err := o.client.CreateUser(user)
 	if err != nil {
-		return fmt.Errorf("error creating user: %v", err)
+		return 0, err
 	}
-
-	if err := o.SetUserState(int(result.(User).ID)); err != nil {
-		return err
+	resultMap, ok := result.(map[string]any)
+	if !ok {
+		return 0, fmt.Errorf("unexpected response type from create user: %T", result)
 	}
+	idFloat, ok := resultMap["id"].(float64)
+	if !ok {
+		return 0, fmt.Errorf("missing or invalid id in create user response")
+	}
+	return int(idFloat), nil
+}
 
-	return nil
+// SetPassword sets a password for a user
+func (o *Onelogin) SetPassword(userID int, password string) error {
+	body := map[string]string{
+		"password":              password,
+		"password_confirmation": password,
+	}
+	_, err := o.client.UpdatePasswordInsecure(userID, body)
+	return err
+}
+
+// SendInviteLink sends a password setup/reset invite link to a user
+func (o *Onelogin) SendInviteLink(email, personalEmail string) error {
+	invite := Invite{
+		Email:         email,
+		PersonalEmail: personalEmail,
+	}
+	_, err := o.client.SendInviteLink(invite)
+	return err
 }
