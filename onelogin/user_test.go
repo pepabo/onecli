@@ -201,7 +201,7 @@ func TestCreateUser(t *testing.T) {
 				Firstname: "New",
 				Lastname:  "User",
 			},
-			mockResponse: map[string]interface{}{
+			mockResponse: map[string]any{
 				"id":        float64(3),
 				"email":     "newuser@example.com",
 				"username":  "newuser",
