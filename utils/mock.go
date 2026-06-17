@@ -28,6 +28,18 @@ func (m *MockClient) CreateUser(user models.User) (any, error) {
 	return args.Get(0), args.Error(1)
 }
 
+// UpdatePasswordInsecure mocks the UpdatePasswordInsecure method
+func (m *MockClient) UpdatePasswordInsecure(userID int, requestBody any) (any, error) {
+	args := m.Called(userID, requestBody)
+	return args.Get(0), args.Error(1)
+}
+
+// SendInviteLink mocks the SendInviteLink method
+func (m *MockClient) SendInviteLink(invite models.Invite) (any, error) {
+	args := m.Called(invite)
+	return args.Get(0), args.Error(1)
+}
+
 // GetApps mocks the GetApps method
 func (m *MockClient) GetApps(query models.Queryable) (any, error) {
 	args := m.Called(query)

@@ -22,6 +22,10 @@ var (
 	userQueryLastname  string
 	userQueryUserID    string
 	output             string
+
+	sendInvitePersonalEmail string
+	setPasswordValue        string
+	setStatusValue          int32
 )
 
 // initClient initializes the OneLogin client
@@ -84,24 +88,13 @@ var modifyEmailCmd = &cobra.Command{
 			return err
 		}
 
-		users, err := client.GetUsers(query)
+		user, err := findUserByQuery(client, query)
 		if err != nil {
-			return fmt.Errorf("error getting users: %v", err)
+			return err
 		}
-
-		if len(users) == 0 {
-			return fmt.Errorf("no users found matching the query")
-		}
-
-		if len(users) > 1 {
-			return fmt.Errorf("multiple users found matching the query. Please be more specific")
-		}
-
-		user := users[0]
 		user.Email = newEmail
 
-		err = client.UpdateUser(int(user.ID), user)
-		if err != nil {
+		if err := client.UpdateUser(int(user.ID), user); err != nil {
 			return fmt.Errorf("error updating user: %v", err)
 		}
 
@@ -111,10 +104,11 @@ var modifyEmailCmd = &cobra.Command{
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add <first-name> <last-name> <email>",
-	Short: "Add a new user",
-	Long:  `Add a new user to your OneLogin organization`,
-	Args:  cobra.ExactArgs(3),
+	Use:          "add <first-name> <last-name> <email>",
+	Short:        "Add a new user",
+	Long:         `Add a new user to your OneLogin organization`,
+	Args:         cobra.ExactArgs(3),
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		firstName := args[0]
 		lastName := args[1]
@@ -122,7 +116,7 @@ var addCmd = &cobra.Command{
 
 		client, err := initClient()
 		if err != nil {
-			return fmt.Errorf("error initializing OneLogin client: %v", err)
+			return err
 		}
 
 		newUser := onelogin.User{
@@ -131,12 +125,101 @@ var addCmd = &cobra.Command{
 			Email:     email,
 		}
 
-		err = client.CreateUser(newUser)
-		if err != nil {
+		if _, err := client.CreateUser(newUser); err != nil {
 			return fmt.Errorf("error creating user: %v", err)
 		}
 
 		fmt.Printf("Successfully added user: %s %s with email: %s\n", newUser.Firstname, newUser.Lastname, newUser.Email)
+		return nil
+	},
+}
+
+var setPasswordCmd = &cobra.Command{
+	Use:          "set-password",
+	Short:        "Set a password for a user",
+	Long:         `Set a password for an existing OneLogin user`,
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		query := getUserQuery()
+		if isQueryParamsEmpty(query) {
+			return fmt.Errorf("at least one query parameter (email, username, firstname, lastname, or user-id) must be specified")
+		}
+
+		client, err := initClient()
+		if err != nil {
+			return err
+		}
+
+		user, err := findUserByQuery(client, query)
+		if err != nil {
+			return err
+		}
+
+		if err := client.SetPassword(int(user.ID), setPasswordValue); err != nil {
+			return fmt.Errorf("error setting password: %v", err)
+		}
+
+		fmt.Printf("Successfully set password for %s\n", user.Email)
+		return nil
+	},
+}
+
+var setStatusCmd = &cobra.Command{
+	Use:          "set-status",
+	Short:        "Set the status of a user",
+	Long:         `Set the status of an existing OneLogin user (1=Active, 2=Suspended, 4=PasswordExpired, 5=AwaitingPasswordReset)`,
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		query := getUserQuery()
+		if isQueryParamsEmpty(query) {
+			return fmt.Errorf("at least one query parameter (email, username, firstname, lastname, or user-id) must be specified")
+		}
+
+		client, err := initClient()
+		if err != nil {
+			return err
+		}
+
+		user, err := findUserByQuery(client, query)
+		if err != nil {
+			return err
+		}
+
+		if err := client.UpdateUser(int(user.ID), onelogin.User{Status: setStatusValue}); err != nil {
+			return fmt.Errorf("error setting user status: %v", err)
+		}
+
+		fmt.Printf("Successfully set status %d for %s\n", setStatusValue, user.Email)
+		return nil
+	},
+}
+
+var sendInviteCmd = &cobra.Command{
+	Use:          "send-invite",
+	Short:        "Send a password setup/reset invite link to a user",
+	Long:         `Send a password setup/reset invite link to a OneLogin user via email.`,
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		query := getUserQuery()
+		if isQueryParamsEmpty(query) {
+			return fmt.Errorf("at least one query parameter (email, username, firstname, lastname, or user-id) must be specified")
+		}
+
+		client, err := initClient()
+		if err != nil {
+			return err
+		}
+
+		user, err := findUserByQuery(client, query)
+		if err != nil {
+			return err
+		}
+
+		if err := client.SendInviteLink(user.Email, sendInvitePersonalEmail); err != nil {
+			return fmt.Errorf("error sending invite link: %v", err)
+		}
+
+		fmt.Printf("Successfully sent invite link for %s\n", user.Email)
 		return nil
 	},
 }
@@ -172,11 +255,30 @@ func isQueryParamsEmpty(params onelogin.UserQuery) bool {
 	return params.Email == nil && params.Username == nil && params.Firstname == nil && params.Lastname == nil && params.UserIDs == nil
 }
 
+// findUserByQuery looks up a single user matching the query and returns it.
+// Errors if no user matches or if more than one matches.
+func findUserByQuery(client *onelogin.Onelogin, query onelogin.UserQuery) (onelogin.User, error) {
+	users, err := client.GetUsers(query)
+	if err != nil {
+		return onelogin.User{}, fmt.Errorf("error getting users: %v", err)
+	}
+	if len(users) == 0 {
+		return onelogin.User{}, fmt.Errorf("no users found matching the query")
+	}
+	if len(users) > 1 {
+		return onelogin.User{}, fmt.Errorf("multiple users found matching the query. Please be more specific")
+	}
+	return users[0], nil
+}
+
 func init() {
 	userCmd.AddCommand(listCmd)
 	userCmd.AddCommand(modifyCmd)
 	modifyCmd.AddCommand(modifyEmailCmd)
 	userCmd.AddCommand(addCmd)
+	userCmd.AddCommand(setPasswordCmd)
+	userCmd.AddCommand(setStatusCmd)
+	userCmd.AddCommand(sendInviteCmd)
 
 	listCmd.Flags().StringVarP(&output, "output", "o", "yaml", "Output format (yaml, json, csv)")
 	listCmd.Flags().StringVar(&userQueryEmail, "email", "", "Filter users by email")
@@ -190,4 +292,27 @@ func init() {
 	modifyEmailCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Query by first name")
 	modifyEmailCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Query by last name")
 	modifyEmailCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Query by user ID")
+
+	setPasswordCmd.Flags().StringVar(&userQueryEmail, "email", "", "Query by email")
+	setPasswordCmd.Flags().StringVar(&userQueryUsername, "username", "", "Query by username")
+	setPasswordCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Query by first name")
+	setPasswordCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Query by last name")
+	setPasswordCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Query by user ID")
+	setPasswordCmd.Flags().StringVar(&setPasswordValue, "password", "", "New password (required)")
+	_ = setPasswordCmd.MarkFlagRequired("password")
+
+	setStatusCmd.Flags().StringVar(&userQueryEmail, "email", "", "Query by email")
+	setStatusCmd.Flags().StringVar(&userQueryUsername, "username", "", "Query by username")
+	setStatusCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Query by first name")
+	setStatusCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Query by last name")
+	setStatusCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Query by user ID")
+	setStatusCmd.Flags().Int32Var(&setStatusValue, "status", 0, "Status value (1=Active, 2=Suspended, 4=PasswordExpired, 5=AwaitingPasswordReset) (required)")
+	_ = setStatusCmd.MarkFlagRequired("status")
+
+	sendInviteCmd.Flags().StringVar(&userQueryEmail, "email", "", "Query by email")
+	sendInviteCmd.Flags().StringVar(&userQueryUsername, "username", "", "Query by username")
+	sendInviteCmd.Flags().StringVar(&userQueryFirstname, "firstname", "", "Query by first name")
+	sendInviteCmd.Flags().StringVar(&userQueryLastname, "lastname", "", "Query by last name")
+	sendInviteCmd.Flags().StringVar(&userQueryUserID, "user-id", "", "Query by user ID")
+	sendInviteCmd.Flags().StringVar(&sendInvitePersonalEmail, "personal-email", "", "Optional alternate email to send the invite link to")
 }

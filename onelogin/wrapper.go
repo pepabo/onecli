@@ -1,6 +1,7 @@
 package onelogin
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"os"
@@ -32,12 +33,80 @@ func (s *OneloginSDK) GetUsers(query models.Queryable) (any, error) {
 	return s.sdk.GetUsers(query)
 }
 
+// UpdateUser updates a user. It strips zero-value time.Time fields from the
+// payload because models.User declares them as non-pointer time.Time, so
+// json's omitempty cannot drop them and they would otherwise be sent as
+// "0001-01-01T00:00:00Z" and overwrite OneLogin's server-managed timestamps.
 func (s *OneloginSDK) UpdateUser(userID int, user models.User) (any, error) {
-	return s.sdk.UpdateUser(userID, user)
+	body, err := userPayload(user)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := utl.BuildAPIPath(o.UserPathV2, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := s.sdk.Client.Put(&p, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return utl.CheckHTTPResponse(r)
 }
 
+// CreateUser creates a user. See UpdateUser for why zero-value time.Time
+// fields are stripped from the payload.
 func (s *OneloginSDK) CreateUser(user models.User) (any, error) {
-	return s.sdk.CreateUser(user)
+	body, err := userPayload(user)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := utl.BuildAPIPath(o.UserPathV2)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := s.sdk.Client.Post(&p, body)
+	if err != nil {
+		return nil, err
+	}
+
+	return utl.CheckHTTPResponse(r)
+}
+
+// userPayload marshals a user and drops any field whose value is the zero
+// time.Time ("0001-01-01T00:00:00Z"), which models.User emits for unset
+// timestamps despite omitempty.
+func userPayload(user models.User) (map[string]any, error) {
+	b, err := json.Marshal(user)
+	if err != nil {
+		return nil, err
+	}
+
+	var m map[string]any
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+
+	const zeroTime = "0001-01-01T00:00:00Z"
+	for k, v := range m {
+		if s, ok := v.(string); ok && s == zeroTime {
+			delete(m, k)
+		}
+	}
+
+	return m, nil
+}
+
+func (s *OneloginSDK) UpdatePasswordInsecure(userID int, requestBody any) (any, error) {
+	return s.sdk.UpdatePasswordInsecure(userID, requestBody)
+}
+
+func (s *OneloginSDK) SendInviteLink(invite models.Invite) (any, error) {
+	return s.sdk.SendInviteLink(invite)
 }
 
 func (s *OneloginSDK) GetApps(query models.Queryable) (any, error) {
